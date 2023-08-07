@@ -2,34 +2,34 @@
 {
     Console.WriteLine("Укажите номер месяца: ");
     string userInput = Console.ReadLine();
-    int numberOfMonth;
+    string userOutput;
 
-    if (int.TryParse(userInput, out numberOfMonth))
+    if (int.TryParse(userInput, out int numberOfMonth))
     {
-        numberOfMonth = Convert.ToInt32(userInput);
-        if ((numberOfMonth > 0 && numberOfMonth <= 2) || (numberOfMonth == 12))
+        if ((numberOfMonth >= 1 && numberOfMonth <= 2) || (numberOfMonth == 12))
         {
-            Console.WriteLine("Зима");
+            userOutput = "Зима";
         }
         else if (numberOfMonth >= 3 && numberOfMonth <= 5)
         {
-            Console.WriteLine("Весна");
+            userOutput = "Весна";
         }
         else if (numberOfMonth >= 6 && numberOfMonth <= 8)
         {
-            Console.WriteLine("Лето");
+            userOutput = "Лето";
         }
         else if (numberOfMonth >= 9 && numberOfMonth <= 11)
         {
-            Console.WriteLine("Осень");
+            userOutput = "Осень";
         }
         else
         {
-            Console.WriteLine("Нужно указать число от 1 до 12 (включительно)");
+            userOutput = "Нужно указать число от 1 до 12 (включительно)";
         }
     }
     else
     {
-        Console.WriteLine("Вы ввели не целое число. Повторите ввод");
+        userOutput = "Вы ввели не целое число. Повторите ввод";
     }
+    Console.WriteLine(userOutput);
 }

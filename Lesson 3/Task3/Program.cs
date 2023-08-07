@@ -2,20 +2,15 @@
 {
     Console.WriteLine("Введите целое число: ");
     string userInput = Console.ReadLine();
-    int number;
-    if (int.TryParse(userInput, out number))
+    string userOutput;
+
+    if (int.TryParse(userInput, out int number))
     {
-        if (number % 2 == 0)
-        {
-            Console.WriteLine("Четное");
-        }
-        else
-        {
-            Console.WriteLine("Нечетное");
-        }
+        userOutput = number % 2 == 0 ? "Четное" : "Нечетное";
     }
     else
     {
-        Console.WriteLine("Вы ввели не целое число. Повторите ввод");
+        userOutput = "Вы ввели не целое число. Повторите ввод";
     }
+    Console.WriteLine(userOutput);
 }

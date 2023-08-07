@@ -2,28 +2,28 @@
 {
     Console.WriteLine("Введите температуру: ");
     string userInput = Console.ReadLine();
-    int temperature;
-    if (int.TryParse(userInput, out temperature))
+    string userOutput;
+
+    if (int.TryParse(userInput, out int temperature))
     {
         if (temperature > -5)
         {
-            Console.WriteLine("Тепло");
+            userOutput = "Тепло";
         }
-        else if (temperature <= -5 && temperature > -20)
+        else if (temperature > -20)
         {
-            Console.WriteLine("Нормально");
+            userOutput = "Нормально";
         }
-        else if (temperature <= -20)
+        else
         {
-            Console.WriteLine("Холодно");
+            userOutput = "Холодно";
         }
     }
     else
     {
-        Console.WriteLine("Вы ввели не целое число. Повторите ввод");
+        userOutput = "Вы ввели не целое число. Повторите ввод";
     }
-
+    Console.WriteLine(userOutput);
 }
 
 
-//каждое подзадание в виде отдельного коммита с соотв комментом
