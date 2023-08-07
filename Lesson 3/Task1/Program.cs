@@ -5,7 +5,7 @@
     string userOutput;
 
     if (int.TryParse(userInput, out int numberOfMonth))
-    {
+    { 
         switch (numberOfMonth)
         {
             case 1:

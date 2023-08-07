@@ -5,7 +5,7 @@
     string userOutput;
 
     if (int.TryParse(userInput, out int numberOfMonth))
-    {
+    { 
         if ((numberOfMonth >= 1 && numberOfMonth <= 2) || (numberOfMonth == 12))
         {
             userOutput = "Зима";

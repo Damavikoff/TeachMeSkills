@@ -5,7 +5,7 @@
     string userOutput;
 
     if (int.TryParse(userInput, out int temperature))
-    {
+    { 
         if (temperature > -5)
         {
             userOutput = "Тепло";

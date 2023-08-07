@@ -5,7 +5,7 @@
     string userOutput;
 
     if (int.TryParse(userInput, out int number))
-    {
+    { 
         userOutput = number % 2 == 0 ? "Четное" : "Нечетное";
     }
     else
