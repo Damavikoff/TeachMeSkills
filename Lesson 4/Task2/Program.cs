@@ -29,7 +29,7 @@ while (true)
             case "+":
                 int sum = numbers[0] + numbers[1];
                 Console.WriteLine(" = " + sum);
-                    break;
+                break;
             case "-":
                 int sub = numbers[0] - numbers[1];
                 Console.WriteLine(" = " + sub);
