@@ -1,73 +1,61 @@
 ﻿Random random = new Random();
+int[] array = new int[10];
+static int[] FillArrayWithRandomNumbers(int[] array, Random random)
+{
+    for (int i = 0; i < array.Length; i++)
+    {
+        int randomValue = random.Next(1, 20);
+        array[i] = randomValue;
+    }
+    return array;
+}
 
 //Реализовать алгоритм нахождения максимального элемента в одномерном массиве целых чисел (интов). Массив передается как параметр, на выходе int.
-int[] arrayMax = new int[10];
-for (int i = 0; i < arrayMax.Length; i++)
+Console.WriteLine("\n" + "Максимальное число массива arrayMax: " + FindMax(FillArrayWithRandomNumbers(array, random)));
+static int FindMax(int[] array)
 {
-    int randomValue = random.Next(1, 20);
-    arrayMax[i] = randomValue;
+    return array.Max();
 }
-Console.WriteLine("\n" + "Максимальное число массива arrayMax: " + findMax(arrayMax));
 
 //Реализовать алгоритм нахождения среднего арифметического всех элементов  зубчатого массива. Массив передается как параметр, на выходе double.
 int[][] arrayZub = new int[3][];
 arrayZub[0] = new int[3];
 arrayZub[1] = new int[6];
 arrayZub[2] = new int[9];
-for (int i = 0; i < arrayZub.Length; i++) 
+for (int i = 0; i <2; i++)
 {
-    for (int j = 0; j < arrayZub[i].Length; j++) 
-    {
-        int randomValue = random.Next(1, 20);
-        arrayZub[i][j] = randomValue;
-    }
+    FillArrayWithRandomNumbers(arrayZub[i], random);
 }
-Console.WriteLine("Среднее арифметическое всех элементов массивов arrayZub: " + findAverage(arrayZub));
-
-//Реализовать алгоритм составления массива первых n чисел последовательности Фибоначчи
-Console.WriteLine("Числа Фибоначчи: " + string.Join(" ", findFibonachi(11)));
-
-static int findMax (int[] arrayMax)
-{
-    Console.Write("Элементы массива arrayMax: ");
-    for (int i = 0; i < arrayMax.Length; i++) 
-    {
-        Console.Write(arrayMax[i] + " ");
-    }
-    return arrayMax.Max();
-}
-static double findAverage(int[][] arrayZub)
+static double FindAverage(int[][] arrayZub)
 {
     double sumNumbers = 0;
     double sumLength = 0;
-    Console.Write("Элементы массива arrayZub: ");
     for (int i = 0; i < arrayZub.Length; i++)
     {     
         for (int j = 0; j < arrayZub[i].Length; j++)
         {
             sumNumbers += arrayZub[i][j];
             sumLength++;  
-            Console.Write(arrayZub[i][j] + " ");
         }  
     }
-    Console.WriteLine("\n" + "Сумма всех элементов массивов arrayZub: " + sumNumbers + ", количество всех элементов: " + sumLength);
     return sumNumbers / sumLength;
 }
-static int[] findFibonachi(int n)
-{
-    int fibonachi = 0;
-    int temp = 0;
-    int fn = 1;
-    //fn = fn-1 + fn-2
+Console.WriteLine("Среднее арифметическое всех элементов массивов arrayZub: " + FindAverage(arrayZub));
 
-    int[] arrayFib = new int[n];
-    for (int i = 0; i < n; i++)
+//Реализовать алгоритм составления массива первых n чисел последовательности Фибоначчи
+Console.WriteLine("Числа Фибоначчи: " + string.Join(" ", FindFibonachi(11)));
+static int[] FindFibonachi(int n)
+{
+    int[] array = new int[n];
+    if (n>=2)
     {
-        temp = fibonachi;//0 1 1 2 3
-        fibonachi = fn;  //1 1 2 3 5
-        fn += temp;      //1 2 3 5 
-        arrayFib[i] = fibonachi;
+        array[0] = 0;
+        array[1] = 1;
     }
-    return arrayFib;
+    for (int i = 2; i < n; i++) 
+    {
+        array[i] = array[i - 1] + array[i-2];
+    }
+    return array;
 }
 
