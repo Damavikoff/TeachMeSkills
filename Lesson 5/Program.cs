@@ -1,122 +1,171 @@
-﻿string path = null;  //text.txt
+﻿using System.Text;
+
+string path = null;  //text.txt
 string text = null;
+string[] formatedTextByWords = null;
+string[] formatedTextByPunctiation = null;
+
 while (text == null)
 {
     path = Console.ReadLine();
+    TryConnection(path);
+}
+void TryConnection(string path)
+{
     if (File.Exists(path))
     {
-        StreamReader sr = File.OpenText(path);
-        text = sr.ReadToEnd();
-        if (text.Length == 0)
+        text = File.ReadAllText(path);
+        formatedTextByWords = text.Split(new Char[] { ' ', ',', '.', ':', '!', '?', ';' }, StringSplitOptions.RemoveEmptyEntries);
+        formatedTextByPunctiation = text.Split(new Char[] { '.', '!', '?' });
+        if (text.Length == 0) 
         {
             Console.WriteLine($"{path}" + " пустой");
             text = null;
-        }
+        }  
     }
     else
     {
         Console.WriteLine($"{path}" + " не существует");
     }
 }
+static string FromNumbersToWords(int number) => number switch
+{
+    1 => "one",
+    2 => "two",
+    3 => "three",
+    4 => "four",
+    5 => "five",
+    6 => "six",
+    7 => "seven",
+    8 => "eight",
+    9 => "nine",
+    0 => "zero"
+};
+void FindLargestWord()
+{
+    string str = null;
+    int maxLenght = 0, count = 0;
+    foreach (string s in formatedTextByWords)
+    {
+        if (maxLenght < s.Length)
+        {
+            str = s;
+            maxLenght = s.Length;
+        }
+    }
+    for (int i = 0; formatedTextByWords.Length > i; i++)
+    {
+        if (formatedTextByWords[i].Length == maxLenght)
+        {
+            count++;
+        }
+    }
+}
+void FindExclamationAndQuestion()
+{
+    StringBuilder withExclamations = new StringBuilder();
+    StringBuilder withQuestions = new StringBuilder();
+    string trimmedText;
+    trimmedText = text.Replace("?", "?/").Replace("!", "!/");
+    string[] formatedText3 = trimmedText.Split(new Char[] { '.', '/' });
+    foreach (string s in formatedText3)
+    {
+        if (s.Contains('?') == true)
+        {
+            string trimmed = s.Trim();
+            withQuestions.AppendLine(trimmed.Substring(0, trimmed.IndexOf('?') + 1));
+        }
+    }
+    foreach (string s in formatedText3)
+    {
+        if (s.Contains('!') == true)
+        {
+            string trimmed = s.Trim();
+            withExclamations.AppendLine(trimmed.Substring(0, trimmed.IndexOf('!') + 1));
+        }
+    }
+    Console.WriteLine(withQuestions.ToString(), withExclamations.ToString());
+}
+void ChangeNumbersToWords()
+{
+    string replacedText = null;
+    for (int i = 0; i < 9; i++)
+    {
+        string numberWord = FromNumbersToWords(i);
+        replacedText = text.Replace(i.ToString(), numberWord);
+    }
+}
+void FindWordsWithSameEndAndStart()
+{
+    StringBuilder sameEndAndStart = new StringBuilder();
+    for (int i = 0; i < formatedTextByWords.Length; i++)
+    {            
+        if (formatedTextByWords[i][0] == formatedTextByWords[i][formatedTextByWords[i].Length - 1])
+        {
+            sameEndAndStart.AppendLine(formatedTextByWords[i]);
+        }
+    }
+    Console.WriteLine(sameEndAndStart);
+}
+void FindStringsWithoutPunctiation()
+{
+    StringBuilder withoutPunctiation = new StringBuilder();
+    foreach (string s in formatedTextByPunctiation)
+    {
+        if (!s.Contains(',')) //если нет запятой
+            withoutPunctiation.Append(s);           
+    }
+    Console.WriteLine(withoutPunctiation);
+}
+void FindWordsWithMaxNumbers()
+{
+    int maxLenght = 0, index = 0;
+    for (int i = 0; i < formatedTextByWords.Length; i++)
+    {
+        int maxNumber = 0;
+        for (int j = 0; j < formatedTextByWords[i].Length; j++)
+        {
+            if (char.IsNumber(formatedTextByWords[i][j]))
+            {
+                maxNumber++;
+            }
+        }
+        if (maxNumber > maxLenght)
+        {
+            maxLenght = maxNumber;
+            index = i;
+        }
+    }
+}
 while (true)
 {
     string userInput = Console.ReadLine();
-    bool result = int.TryParse(userInput, out var number);
-    if (result == true)
-    {
-        string[] stringSplit = text.Split(new Char[] { ' ', ',', '.', ':', '!', '?', ';' }, StringSplitOptions.RemoveEmptyEntries);
-        string[] stringSplit2 = text.Split(new Char[] { '.', '!', '?' });
-        if (number == 1) //Найти самое длинное слово и определить, сколько раз оно встретилось в тексте
+    bool succes = int.TryParse(userInput, out var number);
+    if (succes)
+    {      
+        switch (number)
         {
-            string str = null;
-            int maxLenght = 0, count = 0;
-            foreach (string s in stringSplit)
-            {
-                if (maxLenght < s.Length)
-                {
-                    str = s;
-                    maxLenght = s.Length;
-                }
-            }
-            for (int i = 0; stringSplit.Length > i; i++)
-            {
-                if (stringSplit[i].Length == maxLenght)
-                {
-                    count++;
-                }
-            }
-        }
-        else if (number == 2) //Заменить цифры от 0 до 9 на слова «ноль», «один», …, «девять».
-        {
-            string replacedText;
-            replacedText = text.Replace("1", "один").Replace("2", "два")
-                .Replace("3", "три").Replace("4", "четыре")
-                .Replace("5", "пять").Replace("6", "шесть")
-                .Replace("7", "семь").Replace("8", "восемь")
-                .Replace("9", "девять").Replace("0", "ноль");
-        }
-        else if (number == 3)//Вывести на экран сначала вопросительные, а затем восклицательные предложения.
-        {
-            string trimmedText;
-            trimmedText = text.Replace("?", "?/").Replace("!", "!/");
-            string[] stringSplit3 = trimmedText.Split(new Char[] { '.', '/' }); //
-
-
-            foreach (string s in stringSplit3)
-            {
-                if (s.Contains('?') == true)
-                {
-                    string trimmed = s.Trim();
-                    Console.WriteLine(trimmed.Substring(0, trimmed.IndexOf('?') + 1));
-                }
-            }
-            foreach (string s in stringSplit3)
-            {
-                if (s.Contains('!') == true)
-                {
-                    string trimmed = s.Trim();
-                    Console.WriteLine(trimmed.Substring(0, trimmed.IndexOf('!') + 1));
-                }
-            }
-
-        }
-        else if (number == 4)//Вывести на экран только предложения, не содержащие запятых.
-        {
-            foreach (string s in stringSplit2)
-            {
-                if (!s.Contains(','))
-                    Console.WriteLine(s.Trim());
-            }
-        }
-        else if (number == 5)//Найти слова, начинающиеся и заканчивающиеся на одну и ту же букву.
-        {
-            for (int i = 0; i < stringSplit.Length; i++)
-            {
-                if (stringSplit[i][0] == stringSplit[i][stringSplit[i].Length - 1])
-                {
-                    Console.WriteLine(stringSplit[i]);
-                }
-            }
-        }
-        else if (number == 6)//Найти слова, содержащие максимальное количество цифр
-        {
-            int maxLenght = 0, index = 0;
-            for (int i = 0; i < stringSplit.Length; i++)
-            {
-                int maxNumber = 0;
-                for (int j = 0; j < stringSplit[i].Length; j++)
-                {
-                    if (char.IsNumber(stringSplit[i][j]))
-                    {
-                        maxNumber++;
-                    }
-                }
-                if (maxNumber > maxLenght)
-                {
-                    maxLenght = maxNumber;
-                    index = i;
-                }
-            }
+            case 1:
+                FindLargestWord();
+                break;
+            case 2:
+                ChangeNumbersToWords();
+                break;
+            case 3:
+                FindExclamationAndQuestion();
+                break;
+            case 4:
+                FindStringsWithoutPunctiation();
+                break;
+            case 5:
+                FindWordsWithSameEndAndStart();
+                break;
+            case 6:
+                FindWordsWithMaxNumbers();
+                break;
+            default:
+                Console.WriteLine("Введите диапазон от 1 до 6");
+                break;
         }
     }
     else
@@ -124,6 +173,3 @@ while (true)
         Console.WriteLine($"{userInput}" + " не цифра");
     }
 }
-
-
-
