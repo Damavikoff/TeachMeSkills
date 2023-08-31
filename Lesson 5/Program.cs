@@ -78,7 +78,7 @@ void FindExclamationAndQuestion()
     }
     foreach (string s in formatedText3)
     {
-        if (s.Contains('!') == true)
+        if (s.Contains('!'))
         {
             string trimmed = s.Trim();
             withExclamations.AppendLine(trimmed.Substring(0, trimmed.IndexOf('!') + 1));
