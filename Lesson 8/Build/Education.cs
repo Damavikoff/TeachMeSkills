@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Build
+﻿namespace Build
 {
-    public class Education : IBuilding
+    public class Education : Building
     {
         bool isFoundament;
         bool isWalls;
         bool isRoof;
         bool isFloor;
-        public void BuildFoundament()
+        public override void BuildFoundament()
         {
             if (isFoundament)
             {
@@ -24,7 +18,7 @@ namespace Build
                 isFoundament = true;
             }             
         }
-        public void BuildWalls()
+        public override void BuildWalls()
         {
             if (isWalls)
             {
@@ -36,7 +30,7 @@ namespace Build
                 isWalls = true;
             }
         }
-        public void BuildRoof()
+        public override void BuildRoof()
         {
             if (isRoof)
             {
@@ -48,7 +42,7 @@ namespace Build
                 isRoof = true;
             }    
         }
-        public void BuildFloor()
+        public override void BuildFloor()
         {
             if (isFloor)
             {
