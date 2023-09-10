@@ -2,11 +2,11 @@
 {
     internal class User
     {
-        public int myPostsLimit { get; set; }
-        public int postsToSeeLimit { get; set; }
+        private int myPostsLimit { get; }
+        private int postsToSeeLimit { get; }
         private string[] myPosts;
         private string[] postsToSee;
-        public string Name { get; set; }
+        private string Name { get; }
         public User(int myPostsLimit, int postsToSeeLimit, string name)
         {
             this.myPostsLimit = myPostsLimit;
