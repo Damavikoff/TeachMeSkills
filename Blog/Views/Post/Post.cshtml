@@ -1,0 +1,29 @@
+﻿@model Blog.Models.Post
+
+@{
+    ViewData["Title"] = "Post Page";
+}
+
+<div class="text-center">
+
+  <p class="display-6">Создание поста</p>
+    <form asp-action ="Post" asp-controller="Post">
+        <div class="form-group">
+            <label class="form-control-label" asp-for="Id">id</label>
+            <input type="number" class="form-control" asp-for="Id">
+        </div>
+        <div class="form-group">
+            <label class="form-control-label" asp-for="Name">Name</label>
+            <input type="text" class="form-control" asp-for="Name">
+        </div>
+        <div class="form-group">
+            <label class="form-control-label" asp-for="Content">Content</label>
+            <input type="text" class="form-control" asp-for="Content">
+        </div>
+        <div class="form-group">
+            <label class="form-control-label" asp-for="Description">Description</label>
+            <input type="text" class="form-control" asp-for="Description">
+        </div>
+        <input type="submit" value="Send" />
+    </form>
+</div>

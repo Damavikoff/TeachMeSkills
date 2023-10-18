@@ -1,0 +1,29 @@
+﻿@model IEnumerable<Blog.Models.Post>
+
+@{
+    ViewData["Title"] = "Post Page";
+}
+
+<div class="text-center">
+
+    <p class="display-6">Список постов</p>
+    <table align="center">
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Content</th>
+            <th>Description</th>
+        </tr>
+
+        @foreach (Post post in Model)
+        {
+            <tr>
+                <td>@post.Id</td>
+                <td>@post.Name</td>
+                <td>@post.Content</td>
+                <td>@post.Description</td>
+            </tr>
+        }
+
+    </table>
+</div>

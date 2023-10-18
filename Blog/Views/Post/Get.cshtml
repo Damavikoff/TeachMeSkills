@@ -1,0 +1,38 @@
+﻿@model Blog.Models.Post
+
+@{
+    ViewData["Title"] = "Post Page";
+}
+
+<div class="text-center">
+
+  <p class="display-6">Введите id поста</p>
+        <form method="post">
+
+        <div class="form-group">
+            <div class="form-group">
+                <label class="form-control-label" asp-for="Id">id</label>
+                <input type="number" class="form-control" asp-for="Id">
+            </div>
+        </div>
+        <table align="center">
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Content</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                @if (Model != null)
+                {
+                    <td>@Model.Id</td>
+                    <td>@Model.Name</td>
+                    <td>@Model.Content</td>
+                    <td>@Model.Description</td>
+                }
+            </tr>
+
+        </table>
+        <input type="submit" value="Send" />
+    </form>
+</div>
