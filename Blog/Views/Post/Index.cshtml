@@ -18,12 +18,11 @@
         @foreach (Post post in Model)
         {
             <tr>
-                <td>@post.Id</td>
+                <td><a class="nav-link text-dark" asp-action="Details" asp-route-id="@post.Id">@post.Id</a></td>
                 <td>@post.Name</td>
                 <td>@post.Content</td>
                 <td>@post.Description</td>
             </tr>
         }
-
     </table>
 </div>

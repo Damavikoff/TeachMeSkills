@@ -1,6 +1,7 @@
 ﻿using Blog.Models;
 using Blog.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Blog.Controllers
 {
@@ -11,34 +12,70 @@ namespace Blog.Controllers
         {
             _postService = new PostService();
         }
+
+        [HttpGet]
         public ActionResult Index()
         {
             return View(_postService.GetPosts());
         }
-        public ActionResult Get()
+
+        [HttpGet]
+        public IActionResult Details([FromRoute] int id)
+        {
+            var post = _postService.GetPost(id);
+            if(post == null)
+                return NotFound();
+            return View(post);
+        }
+
+        [HttpGet]
+        public IActionResult Get()
         {
             return View();
         }
+
         [HttpPost]
-        public async Task<IActionResult> Get(int id)
+        public IActionResult Get(int id)
         {
             return View(_postService.GetPost(id));
         }
 
-        //[HttpGet]
-        public ActionResult GetAll()
+        [HttpGet]
+        public IActionResult GetAll()
         {
             return Json(_postService.GetPosts());
         }
+
+        [HttpGet]
         public IActionResult Post()
         {
             return View();
         }
-        [HttpPost]//если не указать, то метод может принимать все типы запросов. Если указать GET, то метод не будет работать как предполагалось 
-        public async Task<IActionResult> Post(Post post)
+
+        [PostValidationFilter]
+        [HttpPost]
+        public IActionResult Post(Post post)
         {
             _postService.AddPost(post);
             return RedirectToAction("Index");
+        }
+
+        public class PostValidationFilterAttribute : ActionFilterAttribute
+        {
+            public override void OnActionExecuting(ActionExecutingContext context)
+            {
+                var postObject = context.ActionArguments.SingleOrDefault(p => p.Value is Post);
+                if (postObject.Value == null)
+                {
+                    context.Result = new BadRequestObjectResult("Post value cannot be null");
+                    return;
+                }
+
+                if (!context.ModelState.IsValid)
+                {
+                    context.Result = new BadRequestObjectResult(context.ModelState);
+                }
+            }
         }
     }
 }
