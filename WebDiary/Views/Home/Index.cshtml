@@ -1,0 +1,173 @@
+﻿@model WebDiary.Models.EventViewModel
+
+@{
+    ViewData["Title"] = "Event Calendar";
+}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            nowIndicator: true,
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'addEventButton',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+            },
+            navLinks: true, // can click day/week names to navigate views
+            editable: true,
+            selectable: true,
+            selectMirror: true,
+            dayMaxEvents: true, // allow "more" link when too many events
+            
+            eventClick: function (arg) {
+                if (confirm('Are you sure you want to delete this event?')) {
+                    arg.event.remove()
+                }
+            },
+            events: '/Home/GetEvents',
+            
+            eventDidMount: function (info) {
+                $(info.el).tooltip({
+                    title: info.event.extendedProps.description,
+                    //container: false,
+                    //delay: { "show": 50, "hide": 50 }
+                });
+            },
+            dateClick: function (date, allDay, jsEvent, view) {
+                //var date = new Date(info.dateStr + 'T00:00:00');
+                $('#eventTitle').val("");
+                $('#eventDate').val(date.dateStr);
+                $('#eventTime').val('T00:00:00');
+                ShowEventPopup(date);
+            },
+           
+            //dateClick: function (info) {
+            //    var titleStr = prompt('Enter a title');
+            //    var date = new Date(info.dateStr + 'T00:00:00'); // will be in local time
+            //    if (!isNaN(date.valueOf())) { // valid?
+            //        calendar.addEvent({
+            //            title: titleStr,
+            //            start: date,
+            //            allDay: true
+            //        });
+            //        alert('Great. Now, update your database...');
+            //    } else {
+            //        alert('Invalid date.');
+            //    }
+            //},
+            
+        
+                //[
+                //    {
+                //        id: 'a',
+                //        title: 'my event',
+                //        start: '2023-10-25',
+                //        backgroundColor: 'red',
+                //        //editable: null
+                //    }
+                //]
+        });
+        calendar.render();
+        
+    });
+    function ShowEventPopup(date) {
+        ClearPopupFormValues();
+        $('#popupEventForm').show();
+        $('#eventTitle').focus();
+    }
+    function ClearPopupFormValues() {
+        $('#eventID').val("");
+        $('#eventTitle').val("");
+        $('#eventDateTime').val("");
+        $('#eventDuration').val("");
+    }
+        //select: function () {
+                //    var dateStr = prompt('Enter a date in YYYY-MM-DD format');
+                //    var date = new Date(dateStr + 'T00:00:00'); // will be in local time
+
+
+                //    if (!isNaN(date.valueOf())) { // valid?
+                //        const string = new String("titleobject");
+                //        calendar.addEvent({
+                //            title: "new event",
+                //            start: date,
+                //            allDay: true
+                //        });
+                //        alert('Great. Now, update your database...');
+                //    } else {
+                //        alert('Invalid date.');
+                //    }
+                //}
+                //customButtons: {
+                //    addEventButton: {
+                //        text: 'add event...',
+                //        click: function () {
+                //            var dateStr = prompt('Enter a date in YYYY-MM-DD format');
+                //            var date = new Date(dateStr + 'T00:00:00'); // will be in local time
+
+
+                //            if (!isNaN(date.valueOf())) { // valid?
+                //                const string = new String("titleobject");
+                //                calendar.addEvent({
+                //                    title: "new event",
+                //                    start: date,
+                //                    allDay: true
+                //                });
+                //                alert('Great. Now, update your database...');
+                //            } else {
+                //                alert('Invalid date.');
+                //            }
+                //        }
+                //    }
+                //}
+</script>
+
+
+
+<div id='calendar'></div>
+
+
+@*<div id="popupEventForm"  div class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modal title</h5>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close" data-close>
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Modal body text goes here.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+                <button type="button" id="btnPopupCancel" data-dismiss="modal" class="btn">Cancel</button>
+                <button type="button" id="btnPopupSave" data-dismiss="modal" class="btn btn-primary">Save event</button>
+            </div>
+        </div>
+    </div>
+</div>*@
+
+<div id="popupEventForm" class="modal hide" style="display: none;">
+   <div class="modal-header"><h3>Add new event</h3></div>
+     <div class="modal-body">
+        <form asp-action="AddEvent" asp-controller="Home">
+            <div class="form-group">
+                <label class="form-control-label" asp-for="title">title</label>
+                <input type="text" class="form-control" asp-for="title">
+            </div>
+            <div class="form-group">
+                <label class="form-control-label" asp-for="start">start</label>
+                <input type="datetime" class="form-control" asp-for="start">
+            </div>        
+            <button type="button" id="btnPopupCancel" data-dismiss="modal" class="btn">modal.hide()</button>
+            <button type="button" id="btnPopupSave" data-dismiss="modal" class="btn btn-primary">Save event</button>
+        </form>
+    </div>
+</div>
+
+
+
+
