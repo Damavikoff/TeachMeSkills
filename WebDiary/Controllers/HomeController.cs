@@ -65,12 +65,12 @@ namespace WebDiary.Controllers
                             title = Convert.ToString(dr["title"]),
                             start = Convert.ToDateTime(dr["start"]),
                             end = Convert.ToDateTime(dr["end"]),
-                            description = Convert.ToString(dr["description"]),
+                            description = Convert.ToString(dr["description"]), //shouldn't be null or tooltip error
                             allDay = Convert.ToBoolean(dr["allDay"]),
                             url = Convert.ToString(dr["url"]),
                             backgroundColor = Convert.ToString(dr["backgroundColor"]),
                             extendedProps = Convert.ToString(dr["extendedProps"])
-                        });
+                        }); ;
                     }
                 }
 
