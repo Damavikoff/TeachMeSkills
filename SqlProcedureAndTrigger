@@ -1,0 +1,34 @@
+USE WebDiary;
+CREATE PROC CreatePass
+    @len int,
+    @min tinyint = 48,
+    @range tinyint = 74,
+    @exclude varchar(50) = '0:;<=>?@O[]`^\/',
+    @output varchar(50) output
+AS 
+    DECLARE @char char
+    SET @output = ''
+ 
+    WHILE @len > 0 BEGIN
+       SELECT @char = char(round(rand() * @range + @min, 0))
+       IF charindex(@char, @exclude) = 0 BEGIN
+           SET @output += @char
+           SET @len = @len - 1
+       END
+    END
+;
+GO
+
+USE WebDiary;
+GO
+CREATE TRIGGER Accounts_INSERT
+ON Accounts
+AFTER INSERT
+AS
+DECLARE @newpass varchar(20)
+EXEC CreatePass @len=8, @output=@newpass OUT
+UPDATE Accounts
+SET Password = @newpass
+WHERE Id = (SELECT Id FROM inserted)
+
+
