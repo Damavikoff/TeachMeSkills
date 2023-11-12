@@ -4,16 +4,19 @@ using System.Data;
 using System.Diagnostics;
 using System.Text.Json;
 using WebDiary.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace WebDiary.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IConfiguration _configuration;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
         }
         public IActionResult Index()
         {
@@ -32,12 +35,10 @@ namespace WebDiary.Controllers
             return Json(GenerateEvents());
         }
 
-        private EventViewModel[] GenerateEvents()//(DateTime start, DateTime end, int startId)
+        private EventViewModel[] GenerateEvents()
         {
-            string connectionString = "Data Source=localhost; Integrated Security=False; user id=sa;password=123qwe; Initial Catalog=WebDiary; TrustServerCertificate=True";
-
             var events = new List<EventViewModel>();
-            SqlConnection conn = new SqlConnection(connectionString);
+            SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("connectionString"));
             conn.Open();
             using (SqlCommand cmd = new SqlCommand(@"select id,
                                                             title,
@@ -46,8 +47,7 @@ namespace WebDiary.Controllers
                                                             description,
                                                             allDay,
                                                             url,
-                                                            backgroundColor,
-                                                            extendedProps
+                                                            backgroundColor
                                                      from [Events]", conn)
             {
                 CommandType = CommandType.Text
@@ -66,11 +66,11 @@ namespace WebDiary.Controllers
                             start = Convert.ToDateTime(dr["start"]),
                             end = Convert.ToDateTime(dr["end"]),
                             description = Convert.ToString(dr["description"]), //shouldn't be null or tooltip error
-                            allDay = Convert.ToBoolean(dr["allDay"]),
+                            allDay = Convert.ToBoolean(dr["allDay"]), //
                             url = Convert.ToString(dr["url"]),
-                            backgroundColor = Convert.ToString(dr["backgroundColor"]),
-                            extendedProps = Convert.ToString(dr["extendedProps"])
-                        }); ;
+                            backgroundColor = Convert.ToString(dr["backgroundColor"])
+                            //extendedProps = Convert.ToString(dr["extendedProps"])
+                        });
                     }
                 }
 
@@ -81,25 +81,24 @@ namespace WebDiary.Controllers
         [HttpPost]
         public IActionResult AddEvent(EventViewModel eventViewModel)
         {
-            string connectionString = "Data Source=localhost; Integrated Security=False; user id=sa;password=123qwe; Initial Catalog=WebDiary; TrustServerCertificate=True";
-
-            SqlConnection conn = new SqlConnection(connectionString);
+            SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("connectionString"));
             
             SqlDataAdapter adapter = new SqlDataAdapter();
-            String sql = "insert into [Events] (id, title, start, [end], allDay) values (@id, @title, @start, @end, @allDay)";
-
+            String sql = "insert into [Events] values (@id, @title, @start, @end, @description, @allDay, @url, @backgroundColor)";
+            //(id, title, start, [end], description, allDay, url, backgroundColor) 
             SqlCommand command = new SqlCommand(sql,conn);
             Guid id = Guid.NewGuid();
             command.Parameters.Add("@id", SqlDbType.UniqueIdentifier).Value = id; // eventViewModel.id;
             command.Parameters.Add("@title", SqlDbType.VarChar).Value = eventViewModel.title;
-            command.Parameters.Add("@start", SqlDbType.DateTime).Value = Convert.ToDateTime("2023-10-08");
-            command.Parameters.Add("@end", SqlDbType.DateTime).Value = Convert.ToDateTime("2023-10-09");
-            command.Parameters.Add("@allDay", SqlDbType.Bit).Value = 1;
+            command.Parameters.Add("@start", SqlDbType.DateTime).Value = eventViewModel.start;
+            command.Parameters.Add("@end", SqlDbType.DateTime).Value = eventViewModel.end;
+            command.Parameters.Add("@description", SqlDbType.VarChar).Value = String.IsNullOrWhiteSpace(eventViewModel.description) ? DBNull.Value : eventViewModel.description;//eventViewModel.description;
+            command.Parameters.Add("@allDay", SqlDbType.Bit).Value = Convert.ToBoolean(eventViewModel.allDay);
+            command.Parameters.Add("@url", SqlDbType.VarChar).Value = String.IsNullOrWhiteSpace(eventViewModel.url) ? DBNull.Value : eventViewModel.url; 
+            command.Parameters.Add("@backgroundColor", SqlDbType.VarChar).Value = Convert.ToString(eventViewModel.backgroundColor);
             conn.Open();
             command.ExecuteNonQuery();
-
-            //command.Dispose();
-		conn.Close();
+		    conn.Close();
             return RedirectToAction("Index");
         }
 
