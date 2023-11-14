@@ -1,37 +1,33 @@
 ﻿using Blog.Models;
-using System.Text.Json;
 
 namespace Blog.Services
 {
     public class PostService : IPostService
     {
-        private readonly string _jsonFile = "posts.json";
-        public void AddPost(Post post) 
+        public void AddPost(Post post)
         {
-            if (post == null) throw new ArgumentNullException(nameof(post));
-            var posts = JsonSerializer.Deserialize<List<Post>>(File.ReadAllText(_jsonFile))
-                ?? new List<Post>();
-            posts.Add(post);
-            var options = new JsonSerializerOptions
+            using (BlogContext db = new BlogContext())
             {
-                WriteIndented = true
-            };
-            File.WriteAllText(_jsonFile, JsonSerializer.Serialize(posts, options));
+                db.Posts.Add(post);
+                db.SaveChanges();
+            }
         }
         public List<Post> GetPosts()
         {
-            return JsonSerializer.Deserialize<List<Post>>(File.ReadAllText(_jsonFile))
-                ?? new List<Post>();
+            using (BlogContext db = new BlogContext())
+            {
+                var Posts = db.Posts.ToList();
+                return Posts;
+            }
         }
         public Post GetPost(int id)
         {
-            var posts = JsonSerializer.Deserialize<List<Post>>(File.ReadAllText(_jsonFile));
             Post obj = null;
-            foreach (var post in posts)
+            using (BlogContext db = new BlogContext())
             {
-                if (post.Id == id) obj = post;
+                obj = db.Posts.FirstOrDefault(p => p.Id == id);
             }
-            return obj; //?? new Post()
+            return obj;
         }
     }
 }

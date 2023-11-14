@@ -8,8 +8,10 @@ namespace Blog.Controllers
     public class PostController : Controller
     {
         private readonly IPostService _postService;
-        public PostController() 
+        private readonly BlogContext _blogContext;
+        public PostController(BlogContext blogContext) 
         {
+            _blogContext = blogContext;
             _postService = new PostService();
         }
 
