@@ -1,4 +1,4 @@
-﻿@model WebDiary.Models.EventViewModel
+﻿@model WebDiary.Models.Event
 
 @{
     ViewData["Title"] = "Event Calendar";
@@ -81,18 +81,18 @@
 
         function ShowEventPopup(sendDate) {
             ClearPopupFormValues();
-            $('#start').val(sendDate);
-            $('#end').val(sendDate);  //value="2020-03-13T18:22"
+            $('#Start').val(sendDate);
+            $('#End').val(sendDate);  //value="2020-03-13T18:22"
             $('#schedule-add').modal('show');
-            $('#title').focus();
+            $('#Title').focus();
             
         }
         function ClearPopupFormValues() {
-            $('#title').val("");
-            $('#description').val("");
-            $('#start').val("");
-            $('#end').val("");
-            $('#url').val("");
+            $('#Title').val("");
+            $('#Description').val("");
+            $('#Start').val("");
+            $('#End').val("");
+            $('#Url').val("");
         }
     </script>
 }
@@ -112,34 +112,34 @@
             <div class="modal-body">
                 <form asp-action="AddEvent" asp-controller="Home">
                     <div class="form-group">
-                        <label asp-for="title">Title</label>
-                        <input type="text" class="form-control" asp-for="title">
+                        <label asp-for="Title">Title</label>
+                        <input type="text" class="form-control" asp-for="Title">
                     </div>
                     <div class="form-group">
-                        <label asp-for="start">Start time</label> 
-                        <input type="datetime-local" class="form-control" asp-for="start">
+                        <label asp-for="Start">Start time</label> 
+                        <input type="datetime-local" class="form-control" asp-for="Start">
                     </div>
                     <div class="form-group">
-                        <label asp-for="end">End datetime</label>
-                        <input type="datetime-local" class="form-control" asp-for="end"> 
+                        <label asp-for="End">End datetime</label>
+                        <input type="datetime-local" class="form-control" asp-for="End"> 
                     </div>
                     <div class="form-group">
-                        <label asp-for="description">Description</label>
-                        <input type="text" class="form-control" asp-for="description">
+                        <label asp-for="Description">Description</label>
+                        <input type="text" class="form-control" asp-for="Description">
                     </div>
                     <div class="form-group">
-                        <label asp-for="allDay">All day</label>
-                        <input type="checkbox" asp-for="allDay"> <label>Yes</label> @*1 - полное заполнение, 0 - нет*@
+                        <label asp-for="AllDay">All day</label>
+                        <input type="checkbox" asp-for="AllDay"> <label>Yes</label> @*1 - полное заполнение, 0 - нет*@
                     </div>
                     <div class="form-group">
-                        <label asp-for="url">Url</label>
-                        <input type="text" class="form-control" asp-for="url">
+                        <label asp-for="Url">Url</label>
+                        <input type="text" class="form-control" asp-for="Url">
                     </div>
                     <div class="form-group">
-                        <label asp-for="backgroundColor">Priority</label>
-                        <input type="radio" asp-for="backgroundColor" value="#de3131"> <label>High</label>
-                        <input type="radio" asp-for="backgroundColor" value="#e0b104"> <label>Normal</label>
-                        <input type="radio" asp-for="backgroundColor" value="#3788d8"> <label>Low</label>
+                        <label asp-for="BackgroundColor">Priority</label>
+                        <input type="radio" asp-for="BackgroundColor" value="#de3131"> <label>High</label>
+                        <input type="radio" asp-for="BackgroundColor" value="#e0b104"> <label>Normal</label>
+                        <input type="radio" asp-for="BackgroundColor" value="#3788d8"> <label>Low</label>
                     </div>
                     <!-- Modal footer -->
                     <div class="modal-footer">
