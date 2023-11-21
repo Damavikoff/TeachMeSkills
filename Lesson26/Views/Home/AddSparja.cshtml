@@ -1,0 +1,12 @@
+﻿@model Lesson26.Models.Sparja
+<form asp-action="AddSparja" asp-controller="Home">
+    <div class="form-group">
+        <label asp-for="Name">Имя</label>
+        <input type="text" class="form-control" asp-for="Name">
+    </div>
+    <div class="form-group">
+        <label asp-for="Email">Email</label>
+        <input type="text" class="form-control" asp-for="Email">
+    </div>
+        <button type="submit" class="btn btn-success" id="btnSaveAdd">Я съел спаржу!</button>
+</form>

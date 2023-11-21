@@ -1,0 +1,9 @@
+﻿@model dynamic
+
+<div class="text-center">
+    <h1 class="display-4">Соцсеть любителей спаржи</h1>
+    @foreach (dynamic m in Model)
+    {
+        <p>@m.date @m.name ел спаржу уже @m.count раз</p>
+    }
+</div>
