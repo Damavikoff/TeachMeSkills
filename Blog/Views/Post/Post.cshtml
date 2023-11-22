@@ -1,25 +1,48 @@
-﻿@model Blog.Models.Post
+@model Blog.Models.Article
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JoeBLog | Free Bootstrap 4.3.x template</title>
+</head>
+<body data-spy="scroll" data-target=".navbar" data-offset="40" id="home">
 
-@{
-    ViewData["Title"] = "Post Page";
-}
+    <!-- Page Header -->
+    <header class="page-header page-header-mini">
+        <h1 class="title">Voluptates Corporis Placeat</h1>
+        <ol class="breadcrumb pb-0">
+            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Voluptates Corporis Placeat</li>
+        </ol>
+    </header>
+    <!-- End Of Page Header -->
 
-<div class="text-center">
-
-  <p class="display-6">Создание поста</p>
-    <form asp-action ="Post" asp-controller="Post">
-        <div class="form-group">
-            <label class="form-control-label" asp-for="Name">Name</label>
-            <input type="text" class="form-control" asp-for="Name">
+    <section class="container">
+        <div class="page-container">
+            <div class="page-content">
+                <div class="card">
+                    <form asp-action="Post" asp-controller="Post">
+                        <div class="form-group">
+                            <label class="form-control-label" asp-for="Title">Title</label>
+                            <input type="text" class="form-control" asp-for="Title">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-control-label" asp-for="Content">Content</label>
+                            <input type="text" class="form-control" asp-for="Content">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-control-label" asp-for="Description">Description</label>
+                            <input type="text" class="form-control" asp-for="Description">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-control-label" asp-for="Author">Author</label>
+                            <input type="text" class="form-control" asp-for="Author">
+                        </div>
+                        <input type="submit" value="Send" />
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <label class="form-control-label" asp-for="Content">Content</label>
-            <input type="text" class="form-control" asp-for="Content">
-        </div>
-        <div class="form-group">
-            <label class="form-control-label" asp-for="Description">Description</label>
-            <input type="text" class="form-control" asp-for="Description">
-        </div>
-        <input type="submit" value="Send" />
-    </form>
-</div>
+    </section>
+</body>
+</html>

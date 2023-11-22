@@ -1,32 +1,44 @@
 ﻿using Blog.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Blog.Services
 {
     public class PostService : IPostService
     {
-        public void AddPost(Post post)
+        BlogContext _blogContext;
+        public PostService(BlogContext blogContext)
         {
-            using (BlogContext db = new BlogContext())
-            {
-                db.Posts.Add(post);
-                db.SaveChanges();
-            }
+            _blogContext = blogContext;
         }
-        public List<Post> GetPosts()
+        public void AddPost(Article article)
         {
-            using (BlogContext db = new BlogContext())
-            {
-                var Posts = db.Posts.ToList();
-                return Posts;
-            }
+            _blogContext.Articles.Add(article);
+            _blogContext.SaveChanges();
+
         }
-        public Post GetPost(int id)
+        public void AddComment(Comment comment)
         {
-            Post obj = null;
-            using (BlogContext db = new BlogContext())
-            {
-                obj = db.Posts.FirstOrDefault(p => p.Id == id);
-            }
+            _blogContext.Comments.Add(comment);
+            _blogContext.SaveChanges();
+
+        }
+        public List<Article> GetPosts()
+        {
+            var Posts = _blogContext.Articles.ToList();
+            return Posts;
+        }
+        public Article GetPost(Guid id)
+        {
+            Article obj = null;
+            obj = _blogContext.Articles.FirstOrDefault(p => p.Id == id);
+            return obj;
+        }
+        public Article GetComments(Guid id)
+        {
+            Article obj = null;
+             obj = _blogContext.Articles.Include(p => p.Comments)
+                                         .Where(p => p.Comments.Any(pc => pc.ArticleId == id))
+                                         .SingleOrDefault();
             return obj;
         }
     }

@@ -1,28 +1,46 @@
-﻿@model IEnumerable<Blog.Models.Post>
+@model IEnumerable<Blog.Models.Article>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+</head>
+<body data-spy="scroll" data-target=".navbar" data-offset="40" id="home">
+    <div class="container">
+        
+        <hr>
+        <div class="page-container">
+            <div class="page-content">
+                <div class="row"> 
+                    @foreach (Article post in Model)
+                    {
+                        <div class="col-lg-6">
+                            <div class="card text-center mb-5">
+                                <div class="card-header p-0">
+                                    <div class="blog-media">
+                                        <img src="~/imgs/blog-2.jpg" alt="" class="w-100">
+                                        <a href="#" class="badge badge-primary">@post.Author</a>
+                                    </div>
+                                </div>
+                                <div class="card-body px-0">
+                                    <h5 class="card-title mb-2">@post.Title</h5>
+                                    <small class="small text-muted">
+                                        @post.CreatedAt
+                                        <span class="px-2">-</span>
+                                        <a href="#" class="text-muted">@post.Content</a>
+                                    </small>
+                                    <p class="my-2">@post.Description</p>
+                                </div>
 
-@{
-    ViewData["Title"] = "Post Page";
-}
-
-<div class="text-center">
-
-    <p class="display-6">Список постов</p>
-    <table align="center">
-        <tr>
-            <th>Id</th>
-            <th>Name</th>
-            <th>Content</th>
-            <th>Description</th>
-        </tr>
-
-        @foreach (Post post in Model)
-        {
-            <tr>
-                <td><a class="nav-link text-dark" asp-action="Details" asp-route-id="@post.Id">@post.Id</a></td>
-                <td>@post.Name</td>
-                <td>@post.Content</td>
-                <td>@post.Description</td>
-            </tr>
-        }
-    </table>
-</div>
+                                <div class="card-footer p-0 text-center">
+                                    <a asp-controller="Post" asp-action="Get" asp-route-Id="@post.Id">READ MORE</a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <button class="btn btn-primary btn-block my-4">Load More Posts</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -8,11 +8,10 @@ namespace Blog.Controllers
     public class PostController : Controller
     {
         private readonly IPostService _postService;
-        private readonly BlogContext _blogContext;
-        public PostController(BlogContext blogContext) 
+
+        public PostController(IPostService postService)
         {
-            _blogContext = blogContext;
-            _postService = new PostService();
+            _postService = postService;
         }
 
         [HttpGet]
@@ -22,7 +21,7 @@ namespace Blog.Controllers
         }
 
         [HttpGet]
-        public IActionResult Details([FromRoute] int id)
+        public IActionResult Details([FromRoute] Guid id)
         {
             var post = _postService.GetPost(id);
             if(post == null)
@@ -30,16 +29,16 @@ namespace Blog.Controllers
             return View(post);
         }
 
-        [HttpGet]
-        public IActionResult Get()
-        {
-            return View();
-        }
+        //public IActionResult Get()
+        //{
+        //    return View();
+        //}
 
-        [HttpPost]
-        public IActionResult Get(int id)
+        [HttpGet]
+        public IActionResult Get(Guid id)
         {
-            return View(_postService.GetPost(id));
+            var comments = _postService.GetComments(id);
+            return View(comments);
         }
 
         [HttpGet]
@@ -56,9 +55,16 @@ namespace Blog.Controllers
 
         [PostValidationFilter]
         [HttpPost]
-        public IActionResult Post(Post post)
+        public IActionResult Post(Article post)
         {
             _postService.AddPost(post);
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public IActionResult Comment(Comment comment)
+        {
+            _postService.AddComment(comment);
             return RedirectToAction("Index");
         }
 
@@ -66,7 +72,7 @@ namespace Blog.Controllers
         {
             public override void OnActionExecuting(ActionExecutingContext context)
             {
-                var postObject = context.ActionArguments.SingleOrDefault(p => p.Value is Post);
+                var postObject = context.ActionArguments.SingleOrDefault(p => p.Value is Article);
                 if (postObject.Value == null)
                 {
                     context.Result = new BadRequestObjectResult("Post value cannot be null");

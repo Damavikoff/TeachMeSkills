@@ -1,10 +1,11 @@
 using Blog.Models;
+using Blog.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<BlogContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddScoped<IPostService, PostService>();
 
 builder.Services.AddControllersWithViews();
 
