@@ -1,5 +1,5 @@
 ﻿using Blog.Models;
-using Blog.Services;
+using Blog.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -8,63 +8,55 @@ namespace Blog.Controllers
     public class PostController : Controller
     {
         private readonly IPostService _postService;
+        private readonly IReadService _readService;
 
-        public PostController(IPostService postService)
+        public PostController(IPostService postService, IReadService readService)
         {
             _postService = postService;
+            _readService = readService; 
+        }
+
+        public ActionResult Register()
+        {
+            return View();
         }
 
         [HttpGet]
         public ActionResult Index()
         {
-            return View(_postService.GetPosts());
+            return View(_readService.ShowArticles());
         }
 
-        [HttpGet]
-        public IActionResult Details([FromRoute] Guid id)
+        public IActionResult ShowArticle([FromRoute] Guid id)
         {
-            var post = _postService.GetPost(id);
-            if(post == null)
-                return NotFound();
-            return View(post);
-        }
-
-        //public IActionResult Get()
-        //{
-        //    return View();
-        //}
-
-        [HttpGet]
-        public IActionResult Get(Guid id)
-        {
-            var comments = _postService.GetComments(id);
-            return View(comments);
+            var articleDetails = _readService.ShowArticleDetails(id);
+            return View(articleDetails);
         }
 
         [HttpGet]
-        public IActionResult GetAll()
-        {
-            return Json(_postService.GetPosts());
-        }
-
-        [HttpGet]
-        public IActionResult Post()
+        public IActionResult CreateArticle()
         {
             return View();
         }
 
         [PostValidationFilter]
         [HttpPost]
-        public IActionResult Post(Article post)
+        public IActionResult CreateArticle(ArticleDTO post)
         {
-            _postService.AddPost(post);
+            _postService.CreateArticle(post);
             return RedirectToAction("Index");
         }
 
-        [HttpPost]
-        public IActionResult Comment(Comment comment)
+        [HttpGet]
+        public IActionResult WriteComment()
         {
-            _postService.AddComment(comment);
+            return PartialView();
+        }
+
+        [HttpPost]
+        public IActionResult WriteComment(CommentDTO comment)
+        {
+            _postService.CreateComment(comment);
             return RedirectToAction("Index");
         }
 
@@ -72,7 +64,7 @@ namespace Blog.Controllers
         {
             public override void OnActionExecuting(ActionExecutingContext context)
             {
-                var postObject = context.ActionArguments.SingleOrDefault(p => p.Value is Article);
+                var postObject = context.ActionArguments.SingleOrDefault(p => p.Value is ArticleDTO);
                 if (postObject.Value == null)
                 {
                     context.Result = new BadRequestObjectResult("Post value cannot be null");

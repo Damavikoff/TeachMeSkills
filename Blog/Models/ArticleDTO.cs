@@ -1,9 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Blog.Models
 {
-    public class Article
+    public class ArticleDTO
     {
         public Guid Id { get; set; }
 
@@ -11,11 +10,9 @@ namespace Blog.Models
         public string Title { get; set; }
         public string Description { get; set; }
         public string Content { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public string Author { get; set; }
-        public List<Comment> Comments { get; set; } = new();
-
-        [NotMapped]
-        public Comment Comment { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public Guid AccountId { get; set; }
+        //public Account? Account { get; set; }
+        public List<CommentDTO> Comments { get; set; } = new();
     }
 }

@@ -1,11 +1,15 @@
 using Blog.Models;
+using Data.Models;
 using Blog.Services;
+using Blog.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<BlogContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<IReadService, ReadService>();
+builder.Services.AddScoped<IMapperService, MapperService>();
 
 builder.Services.AddControllersWithViews();
 

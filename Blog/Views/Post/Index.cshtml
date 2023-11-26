@@ -1,4 +1,4 @@
-@model IEnumerable<Blog.Models.Article>
+@model IEnumerable<Blog.Models.ArticleDTO>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,19 +6,18 @@
 </head>
 <body data-spy="scroll" data-target=".navbar" data-offset="40" id="home">
     <div class="container">
-        
         <hr>
         <div class="page-container">
             <div class="page-content">
                 <div class="row"> 
-                    @foreach (Article post in Model)
+                    @foreach (ArticleDTO post in Model)
                     {
                         <div class="col-lg-6">
                             <div class="card text-center mb-5">
                                 <div class="card-header p-0">
                                     <div class="blog-media">
                                         <img src="~/imgs/blog-2.jpg" alt="" class="w-100">
-                                        <a href="#" class="badge badge-primary">@post.Author</a>
+                                        @*<a href="#" class="badge badge-primary">@post.Author</a>*@
                                     </div>
                                 </div>
                                 <div class="card-body px-0">
@@ -32,7 +31,7 @@
                                 </div>
 
                                 <div class="card-footer p-0 text-center">
-                                    <a asp-controller="Post" asp-action="Get" asp-route-Id="@post.Id">READ MORE</a>
+                                    <a asp-controller="Post" asp-action="ShowArticle" asp-route-Id="@post.Id">READ MORE</a>
                                 </div>
                             </div>
                         </div>

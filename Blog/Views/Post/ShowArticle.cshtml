@@ -1,0 +1,52 @@
+@model Blog.Models.ArticleDTO
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+</head>
+<body data-spy="scroll" data-target=".navbar" data-offset="40" id="home">
+
+    <section class="container">
+        <div class="page-container">
+            <div class="page-content">
+                <div class="card">
+                    <form asp-action="ShowArticle" asp-controller="Post" asp-route-Id="@Model.Id">
+                    <div class="card-header pt-0">
+                            <h3 >@Model.Title</h3>
+                    </div>
+                    <div class="card-body border-top">
+                            <p class="my-3">@Model.Content</p>
+                            <p>@Model.Description</p>
+                    </div>
+                        <small class="small text-muted">
+                            @*<a href="#" class="text-muted">@Model.Author</a>*@
+                            <span class="px-2">·</span>
+                            <span>@Model.CreatedAt</span>
+                            <span class="px-2">·</span>
+                            <a href="#" class="text-muted">Comments: @Model.Comments.Count</a>
+                        </small>
+                    </form>
+                    <div class="card-footer">
+                        <hr>
+                        @foreach (var comment in @Model.Comments)
+                        {
+                        <div class="media mt-5">
+                            <img src="~/imgs/avatar-2.jpg" class="mr-3 thumb-sm rounded-circle" alt="...">
+                            <div class="media-body">
+                                @*<h6 class="mt-0">@comment.Name</h6>*@
+                                    <p>@comment.Content</p>
+                            </div>
+                        </div>
+                        }
+                        
+                        @await Html.PartialAsync("WriteComment",new Blog.Models.CommentDTO() 
+                                                                { 
+                                                                    ArticleId = Model.Id 
+                                                                });
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

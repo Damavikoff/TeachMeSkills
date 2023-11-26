@@ -1,45 +1,32 @@
 ﻿using Blog.Models;
-using Microsoft.EntityFrameworkCore;
+using Blog.Services.Interfaces;
+using Data.Models;
 
 namespace Blog.Services
 {
     public class PostService : IPostService
     {
         BlogContext _blogContext;
-        public PostService(BlogContext blogContext)
+        IMapperService _mapper;
+        public PostService(BlogContext blogContext, IMapperService mapper)
         {
             _blogContext = blogContext;
+            _mapper = mapper;
         }
-        public void AddPost(Article article)
+        public void CreateArticle(ArticleDTO articleModel)
         {
+            var article = _mapper.MapToArticle(articleModel);
             _blogContext.Articles.Add(article);
             _blogContext.SaveChanges();
 
         }
-        public void AddComment(Comment comment)
+        public void CreateComment(CommentDTO commentModel)
         {
+            //article validation
+            var comment = _mapper.MapToComment(commentModel);
             _blogContext.Comments.Add(comment);
             _blogContext.SaveChanges();
-
         }
-        public List<Article> GetPosts()
-        {
-            var Posts = _blogContext.Articles.ToList();
-            return Posts;
-        }
-        public Article GetPost(Guid id)
-        {
-            Article obj = null;
-            obj = _blogContext.Articles.FirstOrDefault(p => p.Id == id);
-            return obj;
-        }
-        public Article GetComments(Guid id)
-        {
-            Article obj = null;
-             obj = _blogContext.Articles.Include(p => p.Comments)
-                                         .Where(p => p.Comments.Any(pc => pc.ArticleId == id))
-                                         .SingleOrDefault();
-            return obj;
-        }
+        
     }
 }
