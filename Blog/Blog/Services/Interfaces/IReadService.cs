@@ -6,5 +6,10 @@ namespace Blog.Services.Interfaces
     {
         List<ArticleDTO> ShowArticles();
         ArticleDTO ShowArticleDetails(Guid articleId);
+
+
+
+
+        List<ArticleDetailDTO> ShowArticleList();
     }
 }

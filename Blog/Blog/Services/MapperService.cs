@@ -1,11 +1,10 @@
 ﻿using Blog.Models;
-using Data.Models;
 using Blog.Services.Interfaces;
-using System.Xml.Linq;
+using Data.Models;
 
 namespace Blog.Services
 {
-    public class MapperService : IMapperService
+    public class MapperService : IMapperService //AutoMapper
     {
         public ArticleDTO MapToArticleDTO(Article article)
         {
