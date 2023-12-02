@@ -4,20 +4,22 @@ using Microsoft.Extensions.Hosting;
 using System.Data;
 using System.Diagnostics;
 using WebDiary.Models;
+using WebDiary.Services.Interfaces;
 
 namespace WebDiary.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IEventService _eventService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(IEventService eventService)
         {
-            _logger = logger;
+            _eventService = eventService;
         }
         public IActionResult Index()
         {
-            return View(new Event());
+            return View(new EventDTO());
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -27,30 +29,44 @@ namespace WebDiary.Controllers
         }
 
         [HttpGet]
-        public JsonResult GetEvents()
+        public JsonResult LoadEvents()
         {
-            return Json(GenerateEvents());
+            return Json(_eventService.LoadEvents());
         }
 
-        public List<Event> GenerateEvents()
+        //[HttpGet]
+        public JsonResult GetEvent(Guid id)
         {
-            using (WebDiaryContext db = new WebDiaryContext())
-            {
-                var Posts = db.Events.ToList();
-                return Posts;
-            }
+            return Json(_eventService.GetEvent(id));
         }
-        
+
         [HttpPost]
-        public IActionResult AddEvent(Event eventModel)
+        public JsonResult CreateEvent([FromBody] EventDTO eventModel)
         {
-            using (WebDiaryContext db = new WebDiaryContext())
-            {
-                db.Events.Add(eventModel);
-                db.SaveChanges();
+            if (ModelState.IsValid)
+            { 
+                _eventService.CreateEvent(eventModel);
+                return Json("Event successfully added!");
             }
-            return RedirectToAction("Index");
+            return Json("Something goes wrong...");
         }
 
+        [HttpPost]
+        public JsonResult UpdateEvent([FromBody] EventDTO eventModel)
+        {
+            if (ModelState.IsValid)
+            {
+                _eventService.UpdateEvent(eventModel);
+                return Json("Event successfully updated!");
+            }
+            return Json("Something goes wrong...");
+        }
+
+        [HttpPost]
+        public JsonResult DeleteEvent([FromBody] Guid id)
+        {
+            _eventService.DeleteEvent(id);
+            return Json("ok");
+        }
     }
 }

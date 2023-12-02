@@ -1,8 +1,16 @@
+using Data.Models;
+using Microsoft.EntityFrameworkCore;
+using WebDiary.Services;
+using WebDiary.Services.Interfaces;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<WebDiaryContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("connectionString")));
+builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-string connection = builder.Configuration.GetConnectionString("connectionString");
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

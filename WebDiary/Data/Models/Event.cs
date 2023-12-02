@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WebDiary.Models;
+namespace Data.Models;
 
 public partial class Event
 {
@@ -17,7 +17,7 @@ public partial class Event
 
     public bool AllDay { get; set; }
 
-    public string? Url { get; set; }
+    public string? Url { get; set; } = " ";
 
     public string? BackgroundColor { get; set; }
 }

@@ -3,20 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using WebDiary.Models;
+using Data.Models;
 
 #nullable disable
 
-namespace WebDiary.Migrations
+namespace Data.Migrations
 {
     [DbContext(typeof(WebDiaryContext))]
-    [Migration("20231117205747_Change-url-and-desc-columns")]
-    partial class Changeurlanddesccolumns
+    partial class WebDiaryContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,7 +22,7 @@ namespace WebDiary.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("WebDiary.Models.Event", b =>
+            modelBuilder.Entity("Data.Models.Event", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -40,7 +37,6 @@ namespace WebDiary.Migrations
                         .IsFixedLength();
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .IsUnicode(false)
                         .HasColumnType("varchar(50)");
@@ -58,10 +54,8 @@ namespace WebDiary.Migrations
                         .IsFixedLength();
 
                     b.Property<string>("Url")
-                        .ValueGeneratedOnAdd()
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)")
-                        .HasDefaultValue("");
+                        .HasColumnType("varchar(max)");
 
                     b.HasKey("Id");
 

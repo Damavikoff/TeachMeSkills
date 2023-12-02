@@ -1,12 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace WebDiary.Models;
+namespace Data.Models;
 
 public partial class WebDiaryContext : DbContext
 {
-    public WebDiaryContext()
-    {
-    }
 
     public WebDiaryContext(DbContextOptions<WebDiaryContext> options)
         : base(options)
@@ -14,19 +11,6 @@ public partial class WebDiaryContext : DbContext
     }
 
     public virtual DbSet<Event> Events { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
-        {
-            IConfigurationRoot configuration = new ConfigurationBuilder()
-               .SetBasePath(Directory.GetCurrentDirectory())
-               .AddJsonFile("appsettings.json")
-               .Build();
-            var connectionString = configuration.GetConnectionString("connectionString");
-            optionsBuilder.UseSqlServer(connectionString);
-        }
-    }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Event>(entity =>

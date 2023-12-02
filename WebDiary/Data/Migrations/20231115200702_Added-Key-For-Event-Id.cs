@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace WebDiary.Migrations
+namespace Data.Migrations
 {
     /// <inheritdoc />
     public partial class AddedKeyForEventId : Migration

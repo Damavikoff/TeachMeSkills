@@ -1,4 +1,4 @@
-﻿@model WebDiary.Models.Event
+﻿@model WebDiary.Models.EventDTO
 
 @{
     ViewData["Title"] = "Event Calendar";
@@ -23,11 +23,12 @@
                 selectMirror: true,
                 dayMaxEvents: true, // allow "more" link when too many events
 
-                eventClick: function (date, jsEvent, view) {
-                    $('#schedule-edit').modal('show');
+                eventClick: function(info) {
+                    var resp = GetDetails(info.event.id);
+                    ShowEventPopupValues(resp.responseJSON);
                 },
 
-                events: '/Home/GetEvents',
+                events: '/Home/LoadEvents', //ajax
 
                 eventDidMount: function (info) {
                     $(info.el).tooltip({ //bootstrap tooltip
@@ -42,57 +43,150 @@
                 dateClick: function (date, allDay, jsEvent, view) {
                     sendDate = new Date(date.dateStr);
                     var start_date = moment(date.dateStr).format('YYYY-MM-DDTHH:MM');
-                    //debugger;
                     ShowEventPopup(start_date);
                 },
             });
             calendar.render();
-
         });
 
-
-        $('#btnCloseAdd').click(function () {
-            ClearPopupFormValues();
-            $('#schedule-add').modal('hide');
-        });
-        $('#btnSaveAdd').click(function () {
-            //debugger;
-            $('#schedule-add').modal('hide');
+        $('#btnClose').click(function () {
+            $('#schedule').modal('hide');
         });
 
-
-        $('#btnCloseEdit').click(function () {
-            ClearPopupFormValues();
-            $('#schedule-edit').modal('hide');
-        });
-        $('#btnSaveEdit').click(function () {
-            $('#schedule-edit').modal('hide');
-        });
-        $('#btnDeleteEdit').click(function (arg) {
-            const result = confirm('Are you sure?');
-            if (result) {
-                $('#schedule-edit').modal('hide');
-                arg.event.remove()
-            } else {
-                $('#schedule-edit').modal('hide');
-            }
-
-        });
-
-        function ShowEventPopup(sendDate) {
-            ClearPopupFormValues();
-            $('#Start').val(sendDate);
-            $('#End').val(sendDate);  //value="2020-03-13T18:22"
-            $('#schedule-add').modal('show');
-            $('#Title').focus();
-            
-        }
         function ClearPopupFormValues() {
+            //clear forms after closing
             $('#Title').val("");
             $('#Description').val("");
             $('#Start').val("");
             $('#End').val("");
             $('#Url').val("");
+            $('#AllDay').prop('checked', false);
+            $('input:radio[name=BackgroundColor]').each(function () { $(this).prop('checked', false); });
+        }
+
+        function ShowEventPopup(sendDate) {
+            ClearPopupFormValues();
+            $('#Start').val(sendDate);
+            $('#End').val(sendDate);  //value="2020-03-13T18:22" seconds from number of month
+            $('#schedule').modal('show');
+            $('#btnEdit').hide();
+            $('#btnSave').show();
+            $('#Title').focus();
+        }
+        
+        function ShowEventPopupValues(res) {
+            ClearPopupFormValues();
+            $('#Id').val(res.id);
+            $('#Title').val(res.title);
+            $('#Description').val(res.description);
+            $('#Start').val(res.start);
+            $('#End').val(res.end);
+            $('#Url').val(res.url);
+            $('#AllDay').prop('checked', res.allDay);
+            $('input:radio[name=BackgroundColor]').each(function () {
+                if($(this).val() == res.backgroundColor) {
+                    $(this).prop('checked', true);
+                } else {
+                    $(this).prop('checked', false);
+                }
+            });
+            $('#schedule').modal('show');
+            $('#btnEdit').show();
+            $('#btnSave').hide();
+            $('#Title').focus();
+        }
+
+        function GetDetails(id) {
+            return $.ajax({
+                dataType: 'json',
+                type: "GET",
+                url: "/Home/GetEvent",
+                data: { id: id },
+                async: false,
+                success: function (res) {
+                },
+            });
+        }
+
+        function Add() {
+            var eventdto =
+            {
+                title: $('#Title').val(),
+                description: $('#Description').val(),
+                start: $('#Start').val(),
+                end: $('#End').val(),
+                allDay: $('#AllDay').is(':checked'),
+                url: $('#Url').val(),
+                backgroundColor: $('input[name="BackgroundColor"]:checked').val()
+            };
+
+            //$('#calendar').fullCalendar('renderEvent', eventdto, true);
+            
+            $.ajax({
+                url: "/Home/CreateEvent",
+                data: JSON.stringify(eventdto),
+                type: "POST",
+                async: false, //запрос делается асинхронно и когда приходит ответ на запрос - сама функция уже закончила свое выполнение
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    $('#schedule').modal('hide');
+                    alert(result);
+                    $('#calendar').fullCalendar('refetchEvents');
+                },
+                error: function (errormessage) {
+                    alert(errormessage.responseText);
+                }
+            });
+        }
+
+        function Delete() {
+            var eventId = $('#Id').val();
+            $.ajax({
+                url: "/Home/DeleteEvent",
+                data: JSON.stringify(eventId),
+                type: "POST",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    $('#schedule').modal('hide');
+                    alert(result);
+                    $('#calendar').fullCalendar('refetchEvents');
+                },
+                error: function (errormessage) {
+                    alert(errormessage.responseText);
+                }
+            });
+        }
+
+        function Update() {
+            var eventdto =
+            {
+                id: $('#Id').val(),
+                title: $('#Title').val(),
+                description: $('#Description').val(),
+                start: $('#Start').val(),
+                end: $('#End').val(),
+                allDay: $('#AllDay').is(':checked'),
+                url: $('#Url').val(),
+                backgroundColor: $('input[name="BackgroundColor"]:checked').val()
+            };
+
+            $.ajax({
+                url: "/Home/UpdateEvent",
+                data: JSON.stringify(eventdto),
+                type: "POST",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    $('#schedule').modal('hide');
+                    alert(result);
+                    $('#calendar').fullCalendar('refetchEvents');
+                },
+                error: function (errormessage) {
+                    alert(errormessage.responseText);
+                }
+            });
         }
     </script>
 }
@@ -100,108 +194,63 @@
 <div id='calendar'></div>
 
 <!-- Add Modal -->
-<div class="modal fade" id="schedule-add">
+<div class="modal fade" id="schedule">
     <div class="modal-dialog">
         <div class="modal-content">
             <!-- Modal Header -->
             <div class="modal-header">
-                <h4 class="modal-title">Add Your Schedule</h4>
-
-            </div>
-            <!-- Modal body -->
-            <div class="modal-body">
-                <form asp-action="AddEvent" asp-controller="Home">
-                    <div class="form-group">
-                        <label asp-for="Title">Title</label>
-                        <input type="text" class="form-control" asp-for="Title">
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="Start">Start time</label> 
-                        <input type="datetime-local" class="form-control" asp-for="Start">
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="End">End datetime</label>
-                        <input type="datetime-local" class="form-control" asp-for="End"> 
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="Description">Description</label>
-                        <input type="text" class="form-control" asp-for="Description">
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="AllDay">All day</label>
-                        <input type="checkbox" asp-for="AllDay"> <label>Yes</label> @*1 - полное заполнение, 0 - нет*@
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="Url">Url</label>
-                        <input type="text" class="form-control" asp-for="Url">
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="BackgroundColor">Priority</label>
-                        <input type="radio" asp-for="BackgroundColor" value="#de3131"> <label>High</label>
-                        <input type="radio" asp-for="BackgroundColor" value="#e0b104"> <label>Normal</label>
-                        <input type="radio" asp-for="BackgroundColor" value="#3788d8"> <label>Low</label>
-                    </div>
-                    <!-- Modal footer -->
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success" id="btnSaveAdd">Create</button>
-                        <button type="button" class="btn btn-danger" data-dismiss="modal" id="btnCloseAdd">Close</button>
-                    </div>
-                </form>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-<!-- Edit Modal -->
-<div class="modal fade" id="schedule-edit">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <!-- Modal Header -->
-            <div class="modal-header">
-                <h4 class="modal-title">Edit Your Schedule</h4>
+                <h4 class="modal-title">Your Schedule</h4>
 
             </div>
             <!-- Modal body -->
             <div class="modal-body">
                 <form>
+                    <input type="hidden" class="form-control" id="Id">
                     <div class="form-group">
-                        <label>Schedule Name:</label>
-                        <input type="text" class="form-control">
+                        <label for="Title">Title</label>
+                        <input type="text" class="form-control" id="Title">
+                    </div>
+                    <div class="form-group">
+                        <label for="Start">Start</label> 
+                        <input type="datetime-local" class="form-control" id="Start">
+                    </div>
+                    <div class="form-group">
+                        <label for="End">End</label>
+                        <input type="datetime-local" class="form-control" id="End">
+                    </div>
+                    <div class="form-group">
+                        <label for="Description">Description</label>
+                        <input type="text" class="form-control" id="Description">
+                    </div>
+                    <div class="form-group">
+                        <label for="AllDay">All day</label>
+                        <input type="checkbox" id="AllDay"> <label>Yes</label>
+                    </div>
+                    <div class="form-group">
+                        <label for="Url">Url</label>
+                        <input type="text" class="form-control" id="Url">
+                    </div>
+                    <div class="form-group">
+                        <label for="BackgroundColor">Priority</label>
+                        <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#a895e2"> <label>High</label>
+                        <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#5fbe7d"> <label>Normal</label>
+                        <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#69b1ff"> <label>Low</label>
                     </div>
                     <!-- Modal footer -->
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-danger" id="btnDeleteEdit">Delete event</button>
-                        <button type="button" class="btn btn-success" id="btnSaveEdit">Save</button>
-                        <button type="button" class="btn btn-danger" data-dismiss="modal" id="btnCloseEdit">Close</button>
+                        <button type="submit" class="btn btn-danger" id="btnDelete" onclick="return Delete();">Delete event</button>
+                        <button type="submit" class="btn btn-success" id="btnSave" onclick="return Add();">Create</button>
+                        <button type="submit" class="btn btn-success" id="btnEdit" onclick="return Update();">Save</button>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal" id="btnClose">Close</button>
                     </div>
                 </form>
             </div>
+
         </div>
     </div>
 </div>
 
-@*<script>
-    const addContainer = document.getElementById("schedule-add");
-    const addModal = new bootstrap.Modal(addContainer);
-    document.getElementById("btnCloseAdd").addEventListener("click", function () {
-        addModal.hide();
-    });
-    document.getElementById("btnSaveAdd").addEventListener("click", function () {
-        addModal.hide();
-    });
 
-    const editContainer = document.getElementById("schedule-edit");
-    const editModal = new bootstrap.Modal(editContainer);
-    document.getElementById("btnCloseEdit").addEventListener("click", function () {
-        editModal.hide();
-    });
-    document.getElementById("btnSaveEdit").addEventListener("click", function () {
-        editModal.hide();
-    });
-    document.getElementById("btnDeleteEdit").addEventListener("click", function () {
-        editModal.hide();
-    });
-</script>
-*@
+
+
 
