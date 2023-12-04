@@ -20,20 +20,20 @@ public partial class WebDiaryContext : DbContext
             entity.Property(e => e.AllDay);
             entity.Property(e => e.BackgroundColor)
                 .HasMaxLength(10)
-                .IsFixedLength();
+                .IsUnicode(true);
             entity.Property(e => e.Description)
-                .HasMaxLength(50)
-                .IsUnicode(false);
+                .HasMaxLength(150)
+                .IsUnicode(true);
             entity.Property(e => e.End)
                 .HasColumnType("datetime");
             entity.Property(e => e.Id);
             entity.Property(e => e.Start)
                 .HasColumnType("datetime");
             entity.Property(e => e.Title)
-                .HasMaxLength(10)
-                .IsFixedLength();
+                .HasMaxLength(50)
+                .IsUnicode(true);
             entity.Property(e => e.Url)
-                .IsUnicode(false);
+                .IsUnicode(true);
         });
 
         OnModelCreatingPartial(modelBuilder);
