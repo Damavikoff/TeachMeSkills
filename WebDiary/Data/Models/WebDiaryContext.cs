@@ -9,7 +9,6 @@ public partial class WebDiaryContext : DbContext
         : base(options)
     {
     }
-
     public virtual DbSet<Event> Events { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

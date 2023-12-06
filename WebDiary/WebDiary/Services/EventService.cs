@@ -17,6 +17,8 @@ namespace WebDiary.Services
 
         public List<EventDTO> LoadEvents()
         {
+            //event validation
+            //like not null events (if it can)
             var objs = _webDiaryContext.Events.ToList();
             var objsDTO = _mapper.Map<List<EventDTO>>(objs);
             return objsDTO;
@@ -31,7 +33,6 @@ namespace WebDiary.Services
 
         public void CreateEvent(EventDTO eventModel)
         {
-            //event validation
             var obj = _mapper.Map<Event>(eventModel);
             _webDiaryContext.Events.Add(obj);
             _webDiaryContext.SaveChanges();
@@ -46,13 +47,15 @@ namespace WebDiary.Services
 
         public void DeleteEvent(Guid eventId)
         {
+            //can send null guid (delete when form is already open)
             var obj = _webDiaryContext.Events.FirstOrDefault(p => p.Id == eventId);
             if (obj != null)
             {
                 _webDiaryContext.Events.Remove(obj);
                 _webDiaryContext.SaveChanges();
+                //when this happens, we not entire this method
             }
-
+            //and send to user that event is successfully deleted
         }
     }
 }

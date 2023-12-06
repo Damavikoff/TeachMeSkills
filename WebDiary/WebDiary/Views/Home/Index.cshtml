@@ -16,20 +16,23 @@
                     center: 'title', // 'addEventButton',
                     right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
                 },
-                navLinks: true, // can click day/week names to navigate views
+                navLinks: true, 
                 editable: true,
                 selectable: true,
                 selectMirror: true,
                 droppable: true,
-                dayMaxEvents: true, // allow "more" link when too many events
+                dayMaxEvents: true,
+                weekNumbers: true,
 
                 events: '/Home/LoadEvents', //ajax
 
                 eventClick: function(info) {
                     info.jsEvent.preventDefault(); // don't let the browser navigate
+
                     var resp = GetDetails(info.event.id);
                     ShowEventPopupValues(resp.responseJSON);
-                    if (info.event.url) {
+
+                    if (info.event.url) { // open in another tab
                         window.open(info.event.url);
                     }
                 },
@@ -37,14 +40,6 @@
                 dateClick: function (date, allDay, jsEvent, view) {
                     var start_date = moment(date.dateStr).format('YYYY-MM-DDTHH:MM');
                     ShowEventPopup(start_date);
-                },
-
-                eventResize: function (info) {
-                    alert(info.event.title + " end is now " + info.event.end.toISOString());
-
-                    if (!confirm("is this okay?")) {
-                        info.revert();
-                    }
                 },
 
                 eventDidMount: function (info) {
@@ -64,7 +59,8 @@
             $('#schedule').modal('hide');
         });
 
-        $("#btnSave").click(function (e) {
+        //onclick does not honor html5 validation
+        $("#btnSave").click(function (e) { 
             if ($("#Title")[0].checkValidity() && $("#Start")[0].checkValidity() && 
                 $("#End")[0].checkValidity() && $("#Description")[0].checkValidity() &&
                 $("#BackgroundColor")[0].checkValidity() && $("#Url")[0].checkValidity()) {
@@ -102,12 +98,15 @@
             $('#End').val(sendDate);  //value="2020-03-13T18:22" seconds from number of month
             $('#schedule').modal('show');
             $('#btnEdit').hide();
+            $('#Completed').hide();
+            $('#completed').hide();
             $('#btnSave').show();
             $('#Title').focus();
         }
         
         function ShowEventPopupValues(res) {
             ClearPopupFormValues();
+            //$('#Id').val("5");
             $('#Id').val(res.id);
             $('#Title').val(res.title);
             $('#Description').val(res.description);
@@ -126,6 +125,8 @@
             $('#btnEdit').show();
             $('#btnSave').hide();
             $('#Title').focus();
+            $('#Completed').show();
+            $('#completed').show();
         }
 
         function GetDetails(id) {
@@ -136,7 +137,14 @@
                 data: { id: id },
                 async: false,
                 success: function (res) {
+                    if (res == null)
+                    {
+                        alert("Event is not exists!");
+                    }
                 },
+                false: function (errormessage) {
+                    alert(errormessage.responseText);
+                }
             });
         }
 
@@ -156,15 +164,22 @@
                 url: "/Home/CreateEvent",
                 data: JSON.stringify(eventdto),
                 type: "POST",
-                //async: false, //запрос делается асинхронно и когда приходит ответ на запрос - сама функция уже закончила свое выполнение
+                async: false, //запрос делается асинхронно и когда приходит ответ на запрос - сама функция уже закончила свое выполнение
                 contentType: "application/json;charset=utf-8",
                 dataType: "json",
                 success: function (result) {
                     $('#schedule').modal('hide');
                     alert(result);
-                    $('#calendar').fullCalendar('refetchEvents');
+                    $('#calendar').fullCalendar('refetchEvents'); //it works on delete and update
                 },
                 error: function (errormessage) {
+                    //var data = errormessage.responseJSON;
+                    //var jsonData = JSON.parse(JSON.stringify(data));
+                    //console.log(jsonData);
+                    console.log(errormessage.responseJSON.Start[0]);
+                    //for (n1 in data) {
+                    //    console.log(n1);
+                    //}
                     alert(errormessage.responseText);
                 }
             });
@@ -178,8 +193,8 @@
                 type: "POST",
                 contentType: "application/json;charset=utf-8",
                 dataType: "json",
-                success: function (result) {
-                    $('#schedule').modal('hide');
+                success: function (result) { //why it is not working from the first time? if i waiting for success
+                    $('#schedule').modal('hide'); 
                     alert(result);
                     $('#calendar').fullCalendar('refetchEvents');
                 },
@@ -211,7 +226,7 @@
                 success: function (result) {
                     $('#schedule').modal('hide');
                     alert(result);
-                    $('#calendar').fullCalendar('refetchEvents');
+                    $('#calendar').fullCalendar('refetchEvents'); //it works on delete
                 },
                 error: function (errormessage) {
                     alert(errormessage.responseText);
@@ -226,11 +241,15 @@
 <div class="modal fade" id="schedule">
     <div class="modal-dialog">
         <div class="modal-content">
+            <form>
             <div class="modal-header">
                 <h4 class="modal-title">Your Schedule</h4>
+                    <div class="form-group">
+                        <label for="Completed" id="completed"><b>Done</b></label>
+                        <input type="checkbox" id="Completed">
+                    </div>
             </div>
-            <div class="modal-body">
-                <form>
+                    <div class="modal-body">
                     <input type="hidden" class="form-control" id="Id">
                     <div class="form-group">
                         <label for="Title">Title</label>
@@ -246,7 +265,7 @@
                     </div>
                     <div class="form-group">
                         <label for="Description">Description</label>
-                        <input type="text" class="form-control" id="Description" required> @*maxlength*@
+                        <input type="text" class="form-control" id="Description"> @*maxlength*@
                     </div>
                     <div class="form-group">
                         <label for="AllDay">All day</label>
@@ -262,16 +281,16 @@
                         <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#5fbe7d" required> <label>Normal</label>
                         <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#69b1ff"> <label>Low</label>
                     </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-danger" id="btnDelete" formnovalidate="formnovalidate" onclick="return Delete();">Delete event</button>
-                        <button type="submit" class="btn btn-success" id="btnSave">Create</button>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-danger" id="btnDelete" formnovalidate="formnovalidate" onclick="return Delete();">Delete event</button>  @*//formnovalidate?*@
+                <button type="submit" class="btn btn-success" id="btnSave">Create</button>
                         @*//form validation is the form been validated before submit. 
                         //So if you want to use HTML 5 default form validation with the submit button which has an onclick event, 
                         //the form validation will not work as it is skipped, because these validations are performed when the form is submitted, 
                         //in fact the button with onclick method just call a normal js function.*@
-                        <button type="submit" class="btn btn-success" id="btnEdit">Save</button>
-                        <button type="button" class="btn btn-danger" data-dismiss="modal" id="btnClose">Close</button>
-                    </div>
+                <button type="submit" class="btn btn-success" id="btnEdit">Save</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal" id="btnClose">Close</button>
+            </div>
                 </form>
             </div>
         </div>

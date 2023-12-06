@@ -9,4 +9,48 @@
  #calendar { 
      max-width: 1100px; 
      margin: 0 auto; 
- } 
+
+ }
+/*.fc .fc-daygrid-day.fc-day-today {
+  background-color: rgb(227, 249, 248, 0.5) !important;
+}*/
+
+.fc-day-fri {
+    background-color: white;
+}
+.fc-day-thu {
+    background-color: white;
+}
+.fc-day-wed {
+    background-color: white;
+}
+.fc-day-tue {
+    background-color: white;
+}
+.fc-day-mon {
+    background-color: white;
+}
+.fc-day-sun {
+    background-color: #f5eaea;
+}
+
+.fc-day-sat {
+    background-color: #f5eaea;
+}
+
+.fc-col-header-cell {
+}
+.fc .fc-button-primary {
+    color: #FFFFF;
+    background-color: #979393 !important;
+    /*#FB7171 !important;
+        border-radius: 10px;
+    */
+    border-color: #FFFFFF !important;
+}
+
+.fc-dayGridMonth-view {
+    color: #FFFFF;
+    background-color: white !important;
+    border-color: #FFFFFF !important;
+}

@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Hosting;
-using System.Data;
 using System.Diagnostics;
 using WebDiary.Models;
+using WebDiary.Services.FilterAttributes;
 using WebDiary.Services.Interfaces;
 
 namespace WebDiary.Controllers
 {
+    //rename to EventController
+    //rename layers
+    //add logger
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -28,45 +29,49 @@ namespace WebDiary.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
+
         [HttpGet]
         public JsonResult LoadEvents()
         {
             return Json(_eventService.LoadEvents());
         }
 
-        //[HttpGet]
+        //do i need an action filter for GET?
+        //if model null ...
+        [HttpGet] //was commented
         public JsonResult GetEvent(Guid id)
         {
             return Json(_eventService.GetEvent(id));
         }
 
+        [EventValidationFilter]
         [HttpPost]
         public JsonResult CreateEvent([FromBody] EventDTO eventModel)
         {
-            if (ModelState.IsValid)
-            { 
-                _eventService.CreateEvent(eventModel);
-                return Json("Event successfully added!");
-            }
-            return Json("Something goes wrong...");
+            _eventService.CreateEvent(eventModel);
+            return Json("Event successfully added!");
         }
 
+        [EventValidationFilter]
         [HttpPost]
         public JsonResult UpdateEvent([FromBody] EventDTO eventModel)
         {
-            if (ModelState.IsValid)
-            {
-                _eventService.UpdateEvent(eventModel);
-                return Json("Event successfully updated!");
-            }
-            return Json("Something goes wrong...");
+            _eventService.UpdateEvent(eventModel);
+            return Json("Event successfully updated!");
         }
 
+        [GuidValidationFilter]
         [HttpPost]
         public JsonResult DeleteEvent([FromBody] Guid id)
         {
             _eventService.DeleteEvent(id);
-            return Json("ok");
+            return Json("Event successfully deleted!");
+            //if (ModelState.IsValid)
+            //{
+            //    _eventService.DeleteEvent(id);
+            //    return Json("Event successfully deleted!");
+            //}
+            //return Json("Something goes wrong...");
         }
     }
 }
