@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Data.Models;
+using WebDiary.DAL.Models;
 
 #nullable disable
 
-namespace Data.Migrations
+namespace WebDiary.DAL.Migrations
 {
     [DbContext(typeof(WebDiaryContext))]
     [Migration("20231117205747_Change-url-and-desc-columns")]

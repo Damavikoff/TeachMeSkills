@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebDiary.DAL.Models;
 
@@ -11,9 +12,11 @@ using WebDiary.DAL.Models;
 namespace WebDiary.DAL.Migrations
 {
     [DbContext(typeof(WebDiaryContext))]
-    partial class WebDiaryContextModelSnapshot : ModelSnapshot
+    [Migration("20231209225025_AddedGroups")]
+    partial class AddedGroups
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -196,9 +199,6 @@ namespace WebDiary.DAL.Migrations
                     b.Property<DateTime>("End")
                         .HasColumnType("datetime");
 
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("Start")
                         .HasColumnType("datetime");
 
@@ -212,15 +212,7 @@ namespace WebDiary.DAL.Migrations
                         .IsUnicode(true)
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("GroupId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Events");
                 });
@@ -369,35 +361,6 @@ namespace WebDiary.DAL.Migrations
                         .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("WebDiary.DAL.Models.Event", b =>
-                {
-                    b.HasOne("WebDiary.DAL.Models.Group", "Group")
-                        .WithMany("Events")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WebDiary.DAL.Models.User", "User")
-                        .WithMany("Events")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Group");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("WebDiary.DAL.Models.Group", b =>
-                {
-                    b.Navigation("Events");
-                });
-
-            modelBuilder.Entity("WebDiary.DAL.Models.User", b =>
-                {
-                    b.Navigation("Events");
                 });
 #pragma warning restore 612, 618
         }

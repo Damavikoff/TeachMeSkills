@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Data.Models;
+using WebDiary.DAL.Models;
 
 #nullable disable
 
-namespace Data.Migrations
+namespace WebDiary.DAL.Migrations
 {
     [DbContext(typeof(WebDiaryContext))]
     [Migration("20231115200702_Added-Key-For-Event-Id")]
@@ -25,7 +25,7 @@ namespace Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Data.Models.Event", b =>
+            modelBuilder.Entity("WebDiary.DAL.Models.Event", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

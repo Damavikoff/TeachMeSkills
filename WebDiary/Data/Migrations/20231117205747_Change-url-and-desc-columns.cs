@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Data.Migrations
+namespace WebDiary.DAL.Migrations
 {
     /// <inheritdoc />
     public partial class Changeurlanddesccolumns : Migration

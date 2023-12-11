@@ -11,7 +11,7 @@ namespace WebDiary.Services.FilterAttributes
             var guid = context.ActionArguments.SingleOrDefault(p => p.Value is Guid);
             if (guid.Value == null)
             {
-                context.Result = new BadRequestObjectResult("Sending parameters is wrong!");
+                context.Result = new BadRequestObjectResult("Sending parameters is null or wrong!");
                 return;
             }
 

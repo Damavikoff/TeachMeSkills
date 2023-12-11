@@ -1,8 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
-namespace Data.Models;
+namespace WebDiary.DAL.Models;
 
-public partial class WebDiaryContext : DbContext
+public partial class WebDiaryContext : IdentityDbContext<User>
 {
 
     public WebDiaryContext(DbContextOptions<WebDiaryContext> options)
@@ -32,9 +33,31 @@ public partial class WebDiaryContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(true);
             entity.Property(e => e.Url)
-                .IsUnicode(true);
+            .IsUnicode(true);
         });
 
+        modelBuilder.Entity<Group>()
+        .HasMany(e => e.Users)
+        .WithMany(e => e.Groups)
+        .UsingEntity(
+            "UserGroup",
+            l => l.HasOne(typeof(User)).WithMany().HasForeignKey("UsersId").HasPrincipalKey(nameof(User.Id)),
+            r => r.HasOne(typeof(Group)).WithMany().HasForeignKey("GroupsId").HasPrincipalKey(nameof(Group.Id)),
+            j => j.HasKey("UsersId", "GroupsId"));
+
+        modelBuilder.Entity<User>()
+        .HasMany(e => e.Events)
+        .WithOne(e => e.User)
+        .HasForeignKey(e => e.UserId)
+        .IsRequired();
+
+        modelBuilder.Entity<Group>()
+        .HasMany(e => e.Events)
+        .WithOne(e => e.Group)
+        .HasForeignKey(e => e.GroupId)
+        .IsRequired();
+
+        base.OnModelCreating(modelBuilder);
         OnModelCreatingPartial(modelBuilder);
     }
 

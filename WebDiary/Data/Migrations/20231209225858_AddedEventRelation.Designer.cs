@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebDiary.DAL.Models;
 
@@ -11,9 +12,11 @@ using WebDiary.DAL.Models;
 namespace WebDiary.DAL.Migrations
 {
     [DbContext(typeof(WebDiaryContext))]
-    partial class WebDiaryContextModelSnapshot : ModelSnapshot
+    [Migration("20231209225858_AddedEventRelation")]
+    partial class AddedEventRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

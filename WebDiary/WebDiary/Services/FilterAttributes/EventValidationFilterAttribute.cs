@@ -8,10 +8,10 @@ namespace WebDiary.Services.FilterAttributes
     {
         public override void OnActionExecuting(ActionExecutingContext context)//before, onactionexecuted - after
         {
-            var eventModel = context.ActionArguments.SingleOrDefault(p => p.Value is EventDTO);
+            var eventModel = context.ActionArguments.SingleOrDefault(p => p.Value is EventViewModel);
             if (eventModel.Value == null)
             {
-                context.Result = new BadRequestObjectResult("Sending parameters is wrong!");
+                context.Result = new BadRequestObjectResult("Sending parameters is null or wrong!");
                 return;
             }
 

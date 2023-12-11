@@ -1,4 +1,4 @@
-﻿@model WebDiary.Models.EventDTO
+﻿@model WebDiary.Models.EventViewModel
 
 @{
     ViewData["Title"] = "Event Calendar";
@@ -23,14 +23,37 @@
                 droppable: true,
                 dayMaxEvents: true,
                 weekNumbers: true,
+                eventTimeFormat: { // like '14:30'
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    meridiem: true //am pm
+                },
 
-                events: '/Home/LoadEvents', //ajax
+                //events: '/Home/LoadEvents', //ajax
+                datesSet: function (info) {
+                    var startDate = info.start;
+                    var endDate = info.end;
+                },
+
+                events: {
+                    url: '/Event/LoadEvents',
+                    method: 'GET',
+                    extraParams: {
+                        custom_param1: 'something',
+                        custom_param2: 'somethingelse'
+                    },
+                    failure: function () {
+                        alert('There was an error while fetching events!'); //error message from controller
+                    }
+                },
 
                 eventClick: function(info) {
                     info.jsEvent.preventDefault(); // don't let the browser navigate
 
                     var resp = GetDetails(info.event.id);
-                    ShowEventPopupValues(resp.responseJSON);
+                    if (typeof resp.responseJSON === 'object' || resp.responseJSON instanceof Object) { //мне не нравится вся эта проверка на стороне клиента, и как в js методах работает тоже, надо поправить
+                        ShowEventPopupValues(resp.responseJSON);
+                    }
 
                     if (info.event.url) { // open in another tab
                         window.open(info.event.url);
@@ -60,16 +83,17 @@
         });
 
         //onclick does not honor html5 validation
-        $("#btnSave").click(function (e) { 
+        $("#btnSave").click(function () {
             if ($("#Title")[0].checkValidity() && $("#Start")[0].checkValidity() && 
                 $("#End")[0].checkValidity() && $("#Description")[0].checkValidity() &&
                 $("#BackgroundColor")[0].checkValidity() && $("#Url")[0].checkValidity()) {
-                e.preventDefault();Add();
+                Add();
             }
             else {
                 return 0;
             }
         });
+
         $("#btnEdit").click(function () {
             if ($("#Title")[0].checkValidity() && $("#Start")[0].checkValidity() &&
                 $("#End")[0].checkValidity() && $("#Description")[0].checkValidity() &&
@@ -97,16 +121,15 @@
             $('#Start').val(sendDate);
             $('#End').val(sendDate);  //value="2020-03-13T18:22" seconds from number of month
             $('#schedule').modal('show');
+            $('#btnSave').show();
             $('#btnEdit').hide();
             $('#Completed').hide();
             $('#completed').hide();
-            $('#btnSave').show();
             $('#Title').focus();
         }
         
         function ShowEventPopupValues(res) {
             ClearPopupFormValues();
-            //$('#Id').val("5");
             $('#Id').val(res.id);
             $('#Title').val(res.title);
             $('#Description').val(res.description);
@@ -133,13 +156,12 @@
             return $.ajax({
                 dataType: 'json',
                 type: "GET",
-                url: "/Home/GetEvent",
+                url: "/Event/GetEvent",
                 data: { id: id },
                 async: false,
                 success: function (res) {
-                    if (res == null)
-                    {
-                        alert("Event is not exists!");
+                    if (typeof res === 'string' || res instanceof String) {
+                        alert(res);
                     }
                 },
                 false: function (errormessage) {
@@ -161,7 +183,7 @@
             };
             
             $.ajax({
-                url: "/Home/CreateEvent",
+                url: "/Event/CreateEvent",
                 data: JSON.stringify(eventdto),
                 type: "POST",
                 async: false, //запрос делается асинхронно и когда приходит ответ на запрос - сама функция уже закончила свое выполнение
@@ -170,7 +192,7 @@
                 success: function (result) {
                     $('#schedule').modal('hide');
                     alert(result);
-                    $('#calendar').fullCalendar('refetchEvents'); //it works on delete and update
+                    $('#calendar').fullCalendar('refetchEvents');
                 },
                 error: function (errormessage) {
                     //var data = errormessage.responseJSON;
@@ -186,22 +208,27 @@
         }
 
         function Delete() {
-            var eventId = $('#Id').val();
-            $.ajax({
-                url: "/Home/DeleteEvent",
-                data: JSON.stringify(eventId),
-                type: "POST",
-                contentType: "application/json;charset=utf-8",
-                dataType: "json",
-                success: function (result) { //why it is not working from the first time? if i waiting for success
-                    $('#schedule').modal('hide'); 
-                    alert(result);
-                    $('#calendar').fullCalendar('refetchEvents');
-                },
-                error: function (errormessage) {
-                    alert(errormessage.responseText);
-                }
-            });
+            const result = confirm('Are you sure to delete event "' + $('#Title').val() + '" ?');
+            if (result) {
+                var eventId = $('#Id').val();
+                $.ajax({
+                    url: "/Event/DeleteEvent",
+                    data: JSON.stringify(eventId),
+                    type: "POST",
+                    contentType: "application/json;charset=utf-8",
+                    dataType: "json",
+                    success: function (result) { //why it is not working from the first time? if i waiting for success
+                        $('#schedule').modal('hide');
+                        alert(result);
+                        $('#calendar').fullCalendar('refetchEvents');
+                    },
+                    error: function (errormessage) {
+                        alert(errormessage.responseText);
+                    }
+                });
+            } else {
+                alert("Event is not deleted!");
+            }
         }
 
         function Update() {
@@ -218,7 +245,7 @@
             };
 
             $.ajax({
-                url: "/Home/UpdateEvent",
+                url: "/Event/UpdateEvent",
                 data: JSON.stringify(eventdto),
                 type: "POST",
                 contentType: "application/json;charset=utf-8",
@@ -226,7 +253,7 @@
                 success: function (result) {
                     $('#schedule').modal('hide');
                     alert(result);
-                    $('#calendar').fullCalendar('refetchEvents'); //it works on delete
+                    $('#calendar').fullCalendar('refetchEvents');
                 },
                 error: function (errormessage) {
                     alert(errormessage.responseText);
