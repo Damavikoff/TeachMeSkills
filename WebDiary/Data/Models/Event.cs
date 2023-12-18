@@ -20,8 +20,15 @@ public partial class Event
     public string? Url { get; set; }
 
     public string? BackgroundColor { get; set; }
+
+    [Required]
     public string UserId { get; set; }
-    public User User { get; set; } = null!;
-    public Guid GroupId { get; set; }
-    public Group Group { get; set; } = null!;
+
+    [Required]
+    public User? User { get; set; }
+    public Guid? GroupId { get; set; }
+    public Group? Group { get; set; } = null!;
+
+    [Required]
+    public ICollection<Comment>? Comments { get; set; }
 }

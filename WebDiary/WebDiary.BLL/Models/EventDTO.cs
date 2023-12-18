@@ -1,5 +1,4 @@
 ﻿namespace WebDiary.BLL.Models;
-
 public class EventDTO
 {
     public Guid Id { get; set; }
@@ -11,5 +10,7 @@ public class EventDTO
     public string? Url { get; set; }
     public string? BackgroundColor { get; set; }
     public string UserId { get; set; }
-    public Guid GroupId { get; set; }
+    public Guid? GroupId { get; set; }
+    public GroupDTO? Group { get; set; } = null!;
+
 }

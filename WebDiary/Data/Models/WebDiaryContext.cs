@@ -11,6 +11,8 @@ public partial class WebDiaryContext : IdentityDbContext<User>
     {
     }
     public virtual DbSet<Event> Events { get; set; }
+    public virtual DbSet<Group> Groups { get; set; }
+    public virtual DbSet<Comment> Comments { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Event>(entity =>
@@ -40,7 +42,7 @@ public partial class WebDiaryContext : IdentityDbContext<User>
         .HasMany(e => e.Users)
         .WithMany(e => e.Groups)
         .UsingEntity(
-            "UserGroup",
+            "UserGroups",
             l => l.HasOne(typeof(User)).WithMany().HasForeignKey("UsersId").HasPrincipalKey(nameof(User.Id)),
             r => r.HasOne(typeof(Group)).WithMany().HasForeignKey("GroupsId").HasPrincipalKey(nameof(Group.Id)),
             j => j.HasKey("UsersId", "GroupsId"));
@@ -54,8 +56,8 @@ public partial class WebDiaryContext : IdentityDbContext<User>
         modelBuilder.Entity<Group>()
         .HasMany(e => e.Events)
         .WithOne(e => e.Group)
-        .HasForeignKey(e => e.GroupId)
-        .IsRequired();
+        .HasForeignKey(e => e.GroupId);
+        //.IsRequired();
 
         base.OnModelCreating(modelBuilder);
         OnModelCreatingPartial(modelBuilder);

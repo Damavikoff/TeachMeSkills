@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Security.Claims;
 using WebDiary.BLL.Models;
 using WebDiary.BLL.Services.Interfaces;
+using WebDiary.DAL.Models;
 using WebDiary.Models;
 using WebDiary.Services.FilterAttributes;
 
@@ -11,23 +13,16 @@ namespace WebDiary.Controllers
     //add logger
     public class EventController : Controller
     {
-        private readonly ILogger<EventController> _logger;
+        //private readonly ILogger<EventController> _logger;
         private readonly IMapper _mapper;
-        //IMapper mmaper;
         private readonly IEventService _eventService;
+        private readonly IGroupService _groupService;
 
-        public EventController(IEventService eventService, IMapper mapper)
+        public EventController(IEventService eventService, IGroupService groupService, IMapper mapper)
         {
-            _eventService = eventService;
-            _mapper = mapper;
-
-            //var configuration = new MapperConfiguration(cfg =>
-            //    cfg.AddMaps(new[] {
-            //       typeof(WebDiary.BLL.Models.EventDTO),
-            //        typeof(EventViewModel)
-            //      }));
-
-            //mmaper = configuration.CreateMapper();
+            _eventService = eventService ?? throw new ArgumentNullException(nameof(eventService));
+            _groupService = groupService ?? throw new ArgumentNullException(nameof(groupService));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(eventService));
         }
         public IActionResult Index()
         {
@@ -41,13 +36,15 @@ namespace WebDiary.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> LoadEvents()//(DateTime startTime, DateTime endTime)
+        public async Task<IActionResult> LoadEvents(DateTime start, DateTime end)
         {
-            var result = await _eventService.LoadEventsAsync();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var result = await _eventService.LoadEventsAsync(start, end, userId);
 
             if (result.Succeeded == false)
             {
-                return Json(result.Message); //как-то поправить + при загрузке ивентов только на месяц каждую прокрутку будет ругаться?
+                return Json(result); //как-то поправить + при загрузке ивентов только на месяц каждую прокрутку будет ругаться?
             }
 
             var objsViewModels = _mapper.Map<List<EventViewModel>>(result.Data);
@@ -57,7 +54,9 @@ namespace WebDiary.Controllers
         [HttpGet]
         public async Task<IActionResult> GetEvent(Guid id)
         {
-            var result = await _eventService.GetEventAsync(id);
+            var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var result = await _eventService.GetEventAsync(id, authUserId);
 
             if (result.Succeeded == false)
             {
@@ -72,8 +71,10 @@ namespace WebDiary.Controllers
         [EventValidationFilter]
         public async Task<IActionResult> CreateEvent([FromBody] EventViewModel eventModel)
         {
+            var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             var objDTO = _mapper.Map<EventDTO>(eventModel);
-            var result = await _eventService.CreateEventAsync(objDTO);
+            var result = await _eventService.CreateEventAsync(objDTO, authUserId);
             return Json(result.Message); //возвращать объект?
         }
 
@@ -81,8 +82,10 @@ namespace WebDiary.Controllers
         [EventValidationFilter]
         public async Task<IActionResult> UpdateEvent([FromBody] EventViewModel eventModel)
         {
+            var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             var objDTO = _mapper.Map<EventDTO>(eventModel);
-            var result = await _eventService.UpdateEventAsync(objDTO);
+            var result = await _eventService.UpdateEventAsync(objDTO, authUserId);
             return Json(result.Message);
         }
 
@@ -90,8 +93,18 @@ namespace WebDiary.Controllers
         [GuidValidationFilter]
         public async Task<IActionResult> DeleteEvent([FromBody] Guid id)
         {
-            var result = await _eventService.DeleteEventAsync(id);
+            var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var result = await _eventService.DeleteEventAsync(id, authUserId);
             return Json(result.Message);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ShowUserGroupsPartial()
+        {
+            var result = await _groupService.ShowUserGroups(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var objsViewModels = _mapper.Map<List<GroupViewModel>>(result.Data);
+            return PartialView(objsViewModels);
         }
     }
 }

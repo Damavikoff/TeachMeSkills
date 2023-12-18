@@ -10,6 +10,9 @@ namespace WebDiary.BLL.Services
         {
             CreateMap<EventDTO, Event>();
             CreateMap<EventDTO, Event>().ReverseMap();
+
+            CreateMap<GroupDTO, Group>();
+            CreateMap<GroupDTO, Group>().ReverseMap();
         }
     }
 }

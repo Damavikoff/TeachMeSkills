@@ -17,7 +17,7 @@ namespace WebDiary.Services.FilterAttributes
 
             if (!context.ModelState.IsValid)
             {
-                context.Result = new BadRequestObjectResult(context.ModelState);
+                context.Result = new BadRequestObjectResult(context.ModelState.ValidationState);
             }
         }
     }

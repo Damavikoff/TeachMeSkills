@@ -47,8 +47,8 @@ public class EventViewModel
     [Required]
     [RegularExpression("^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$",
         ErrorMessage = "Wrong USERID value")]
-    public string? UserId { get; set; }
+    public string UserId { get; set; }
 
-    [Required]
-    public Guid GroupId { get; set; }
+    public Guid? GroupId { get; set; } = null!;// nullable for adding null events
+    //public GroupViewModel? Group { get; set; } = null!;
 }

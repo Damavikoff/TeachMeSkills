@@ -1,4 +1,5 @@
-﻿@model WebDiary.Models.EventViewModel
+﻿@using System.Security.Claims;
+@model WebDiary.Models.EventViewModel
 
 @{
     ViewData["Title"] = "Event Calendar";
@@ -30,10 +31,29 @@
                 },
 
                 //events: '/Home/LoadEvents', //ajax
-                datesSet: function (info) {
-                    var startDate = info.start;
-                    var endDate = info.end;
-                },
+                //datesSet: function (info) {
+                //    var startDate = info.start;
+                //    var endDate = info.end;
+                //},
+
+                //events: (info, successCallback, failureCallback) => {
+                //   // debugger;
+                //    $.ajax({
+                //        type: "GET",
+                //        url: "/Event/LoadEvents",
+                //        data: {
+                //            // our hypothetical feed requires UNIX timestamps
+                //            start: info.startStr,
+                //            end: info.endStr
+                //        },
+                //        success: function (res) {
+                //            console.log(res);
+                //        },
+                //        false: function (errormessage) {
+                //            alert(errormessage.responseText);
+                //        }
+                //    });
+                //},
 
                 events: {
                     url: '/Event/LoadEvents',
@@ -41,6 +61,10 @@
                     extraParams: {
                         custom_param1: 'something',
                         custom_param2: 'somethingelse'
+                    },
+                    success: function(res) {
+                        //debugger;
+                        console.log(res.Message);
                     },
                     failure: function () {
                         alert('There was an error while fetching events!'); //error message from controller
@@ -114,12 +138,16 @@
             $('#Url').val("");
             $('#AllDay').prop('checked', false);
             $('input:radio[name=BackgroundColor]').each(function () { $(this).prop('checked', false); });
+            document.getElementById('Group').disabled = false;
+            $('#Group').val("null");
         }
 
         function ShowEventPopup(sendDate) {
             ClearPopupFormValues();
             $('#Start').val(sendDate);
             $('#End').val(sendDate);  //value="2020-03-13T18:22" seconds from number of month
+            $('#schedule :input').prop('disabled', false);
+            //$('#btnClose').prop('disabled', false);
             $('#schedule').modal('show');
             $('#btnSave').show();
             $('#btnEdit').hide();
@@ -132,6 +160,12 @@
             ClearPopupFormValues();
             $('#Id').val(res.id);
             $('#Title').val(res.title);
+            if (res.groupId == null) {
+                $('#Group').val("null");
+            } else {
+                $('#Group').val(res.groupId);
+            }
+            $('#UserId').val(res.userId);
             $('#Description').val(res.description);
             $('#Start').val(res.start);
             $('#End').val(res.end);
@@ -144,7 +178,20 @@
                     $(this).prop('checked', false);
                 }
             });
+            if (res.userId != '@User.FindFirstValue(ClaimTypes.NameIdentifier)') {
+                // $('#btnSave').hide();
+                // $('#btnEdit').hide();
+                // $('#btnDelete').hide();
+                $('#schedule :input').prop('disabled', true);
+                $('#btnClose').prop('disabled', false);
+            }
+            else {
+                $('#schedule :input').prop('disabled', false);
+                $('#btnClose').prop('disabled', false);
+                document.getElementById('Group').disabled = false;
+            };
             $('#schedule').modal('show');
+            
             $('#btnEdit').show();
             $('#btnSave').hide();
             $('#Title').focus();
@@ -173,15 +220,22 @@
         function Add() {
             var eventdto =
             {
+                userId: '@User.FindFirstValue(ClaimTypes.NameIdentifier)',
+                groupId: $('#Group').val(),
                 title: $('#Title').val(),
                 description: $('#Description').val(),
                 start: $('#Start').val(),
                 end: $('#End').val(),
                 allDay: $('#AllDay').is(':checked'),
                 url: $('#Url').val(),
-                backgroundColor: $('input[name="BackgroundColor"]:checked').val()
+                backgroundColor: $('input[name="BackgroundColor"]:checked').val(),
             };
             
+            if ($('#Group').val()=="null") {
+                eventdto.groupId = null;
+            };
+
+
             $.ajax({
                 url: "/Event/CreateEvent",
                 data: JSON.stringify(eventdto),
@@ -234,6 +288,8 @@
         function Update() {
             var eventdto =
             {
+                userId: $('#UserId').val(),
+                groupId: $('#Group').val(),
                 id: $('#Id').val(),
                 title: $('#Title').val(),
                 description: $('#Description').val(),
@@ -243,7 +299,9 @@
                 url: $('#Url').val(),
                 backgroundColor: $('input[name="BackgroundColor"]:checked').val()
             };
-
+            if ($('#Group').val() == "null") {
+                eventdto.groupId = null;
+            };
             $.ajax({
                 url: "/Event/UpdateEvent",
                 data: JSON.stringify(eventdto),
@@ -278,6 +336,7 @@
             </div>
                     <div class="modal-body">
                     <input type="hidden" class="form-control" id="Id">
+                    <input type="hidden" class="form-control" id="UserId">
                     <div class="form-group">
                         <label for="Title">Title</label>
                         <input type="text" class="form-control" id="Title" required>
@@ -308,7 +367,29 @@
                         <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#5fbe7d" required> <label>Normal</label>
                         <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#69b1ff"> <label>Low</label>
                     </div>
-            <div class="modal-footer">
+                    <script>
+                    $(document).ready(function () {
+                    $('#partial-load').load('/Event/ShowUserGroupsPartial');
+                    });
+                    </script>
+                    <div id="partial-load"></div>
+
+                    @*  @await Component.InvokeAsync("TestViewComponent"); *@
+                    
+                    @* <script>
+                        $.ajax({
+                            // edit to add steve's suggestion.
+                            //url: "/ControllerName/ActionName",
+                            type: "GET",
+                            url: "/Event/ShowUserGroupsPartial",
+                            success: function (data) {
+                                
+                                $("#someDiv").html(data);
+                            }
+                        });
+                     </script>  *@
+                    
+                    <div class="modal-footer">
                 <button type="submit" class="btn btn-danger" id="btnDelete" formnovalidate="formnovalidate" onclick="return Delete();">Delete event</button>  @*//formnovalidate?*@
                 <button type="submit" class="btn btn-success" id="btnSave">Create</button>
                         @*//form validation is the form been validated before submit. 

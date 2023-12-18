@@ -1,8 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using WebDiary.BLL.Models;
+using WebDiary.BLL.Models.ServiceResponses;
 using WebDiary.BLL.Services.Interfaces;
 using WebDiary.DAL.Models;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace WebDiary.BLL.Services
 {
@@ -12,55 +15,99 @@ namespace WebDiary.BLL.Services
         private readonly WebDiaryContext _webDiaryContext;
         public EventService(WebDiaryContext webDiaryContext, IMapper mapper)
         {
-            _webDiaryContext = webDiaryContext;
-            _mapper = mapper;
+            _webDiaryContext = webDiaryContext ?? throw new ArgumentNullException(nameof(webDiaryContext));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public async Task<ServiceDataResponse<List<EventDTO>>> LoadEventsAsync()
+        /// <summary>
+        /// Loading all events of an authenticated user (including groups where he is a member)
+        /// </summary>
+        /// <param name="start">
+        /// First date in the displayed calendar sheet
+        /// </param>
+        /// <param name="end">
+        /// Last date in the displayed calendar sheet
+        /// </param>
+        /// <param name="userId">
+        /// ID of an authenticated user
+        /// </param>
+        public async Task<ServiceDataResponse<List<EventDTO>>> LoadEventsAsync(DateTime start, DateTime end, string userId)
         {
-            var objs = await _webDiaryContext.Events.ToListAsync();
+            //select events filtered by userid and date
+            var userEvents = await _webDiaryContext.Events.Where(u => u.UserId == userId).Where(d => d.Start >= start && d.End <= end).ToListAsync();
 
-            if (objs == null)
+            //select groups of user
+            var userGroups = await _webDiaryContext.Users.Where(u => u.Id == userId).SelectMany(g => g.Groups).ToListAsync();
+
+            if (userEvents.Count == 0 && userGroups.Count == 0)
+                return ServiceDataResponse<List<EventDTO>>.Fail("There are no events!"); //this is success operation but with empty response -- for webapi
+
+            if (userGroups.Count == 0)
             {
-                return new ServiceDataResponse<List<EventDTO>>
-                {
-                    Message = "There are no events!",
-                    Succeeded = false
-                };
+                var objsDTO = _mapper.Map<List<EventDTO>>(userEvents);
+
+                return ServiceDataResponse<List<EventDTO>>.Success(objsDTO);
             }
 
-            var objsDTO = _mapper.Map<List<EventDTO>>(objs);
+            List<Guid?> groupGuids = new List<Guid?>();
 
-            return new ServiceDataResponse<List<EventDTO>>
+            foreach (var userGroup in userGroups)
             {
-                Succeeded = true,
-                Data = objsDTO
-            };
+                groupGuids.Add(userGroup.Id);
+            }
+
+            //select all events of user group
+            var groupEvents = await _webDiaryContext.Events.Where(u => groupGuids.Contains(u.GroupId)).Where(d => d.Start >= start && d.End <= end).ToListAsync();
+
+            if (groupEvents.Count == 0)
+            {
+                //if user without personal events but with group without events
+                if (userEvents.Count == 0)
+                    return ServiceDataResponse<List<EventDTO>>.Fail("There are no events!"); //for webapi should return empty body
+
+                var objsDTO = _mapper.Map<List<EventDTO>>(groupEvents);
+
+                return ServiceDataResponse<List<EventDTO>>.Success(objsDTO);
+            }
+            else
+            {
+                var userAndGroupEvents = userEvents.Union(groupEvents).ToList();
+                var objsDTO = _mapper.Map<List<EventDTO>>(userAndGroupEvents);
+
+                return ServiceDataResponse<List<EventDTO>>.Success(objsDTO);
+            }
         }
 
-        public async Task<ServiceDataResponse<EventDTO>> GetEventAsync(Guid eventId)
+        /// <summary>
+        /// Get event by ID
+        /// </summary>
+        public async Task<ServiceDataResponse<EventDTO>> GetEventAsync(Guid eventId, string authUserId)
         {
-            var obj = await _webDiaryContext.Events.FirstOrDefaultAsync(p => p.Id == eventId);
+            //check if can user see this event
+
+            var obj = await _webDiaryContext.Events.Include(p=>p.Group)
+                                                   .FirstOrDefaultAsync(p => p.Id == eventId);
+
+            //if (obj.UserId != authUserId)
+            //    return ServiceDataResponse<EventDTO>.Fail("You can not get this event!");
+            //какой-нибудь чек доступен ли пользователю этот ивент для просмотра
 
             if (obj == null)
-            {
-                return new ServiceDataResponse<EventDTO>
-                {
-                    Message = "Event is not founded!",
-                    Succeeded = false
-                };
-            }
+                return ServiceDataResponse<EventDTO>.Fail("Event is not founded!");
 
             var objDTO = _mapper.Map<EventDTO>(obj);
-            return new ServiceDataResponse<EventDTO>
-            {
-                Succeeded = true,
-                Data = objDTO
-            };
+
+            return ServiceDataResponse<EventDTO>.Success(objDTO);
         }
 
-        public async Task<ServiceResponse> CreateEventAsync(EventDTO eventModel)
+        /// <summary>
+        /// Create a new event
+        /// </summary>
+        public async Task<ServiceResponse> CreateEventAsync(EventDTO eventModel, string authUserId)
         {
+            if (authUserId == null)
+                return ServiceResponse.Fail("You are not authenticated!");
+
             try
             {
                 eventModel.Id = Guid.NewGuid();
@@ -68,68 +115,59 @@ namespace WebDiary.BLL.Services
                 _webDiaryContext.Events.Add(obj);
                 await _webDiaryContext.SaveChangesAsync(); //request to DB is here => async
 
-                return new ServiceResponse
-                {
-                    Succeeded = true,
-                    Message = "Event successfully created!"
-                };
+                return ServiceResponse.Success("Event successfully created!");
             }
             catch(Exception ex)
             {
-                return new ServiceResponse
-                {
-                    Succeeded = false,
-                    Message = ex.Message
-                };
+                return ServiceResponse.Fail(ex.Message);
             }
         }
 
-        public async Task<ServiceResponse> UpdateEventAsync(EventDTO eventModel)
+        /// <summary>
+        /// Update existing event 
+        /// </summary>
+        public async Task<ServiceResponse> UpdateEventAsync(EventDTO eventModel, string authUserId)
         {
+            if (eventModel.UserId != authUserId) 
+            {
+                return ServiceResponse.Fail("You can not update this event!");
+            }
+
             try
             {
                 var obj = _mapper.Map<Event>(eventModel);
                 _webDiaryContext.Events.Update(obj);
                 await _webDiaryContext.SaveChangesAsync();
 
-                return new ServiceResponse
-                {
-                    Succeeded = true,
-                    Message = "Event successfully updated!"
-                };
+                return ServiceResponse.Success("Event successfully updated!");
             }
             catch (Exception ex)
             {
-                return new ServiceResponse
-                {
-                    Succeeded = false,
-                    Message = ex.Message
-                };
+                return ServiceResponse.Fail(ex.Message);
             }
         }
 
-        public async Task<ServiceResponse> DeleteEventAsync(Guid eventId)
+        /// <summary>
+        /// Delete existing event 
+        /// </summary>
+        public async Task<ServiceResponse> DeleteEventAsync(Guid eventId, string authUserId)
         {
-            //can send null guid (delete when form is already open)
             var obj = await _webDiaryContext.Events.FirstOrDefaultAsync(p => p.Id == eventId);
+
+            if (obj.UserId != authUserId)
+            {
+                return ServiceResponse.Fail("You can not delete this event!");
+            }
 
             if (obj == null)
             {
-                return new ServiceResponse
-                {
-                    Succeeded = false,
-                    Message = "Event is not founded!"
-                };
+                return ServiceResponse.Fail("Event is not founded!");
             }
 
             _webDiaryContext.Events.Remove(obj);
             await _webDiaryContext.SaveChangesAsync();
 
-            return new ServiceResponse
-            {
-                Succeeded = true,
-                Message = "Event successfully deleted!"
-            };
+            return ServiceResponse.Success("Event successfully deleted!");
         }
     }
 }

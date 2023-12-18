@@ -1,10 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace WebDiary.Models
 {
     public class GroupViewModel
     {
         [Key]
+        [HiddenInput(DisplayValue = false)]
         public Guid Id { get; set; }
 
         [Required]

@@ -14,6 +14,7 @@ builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfi
  .AddEntityFrameworkStores<WebDiaryContext>();
 
 builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IGroupService, GroupService>();
 
 builder.Services.AddAutoMapper(typeof(EventDTOMappingProfile), typeof(EventViewModelMappingProfile));
 

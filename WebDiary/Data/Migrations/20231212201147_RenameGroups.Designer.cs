@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebDiary.DAL.Models;
 
@@ -11,9 +12,11 @@ using WebDiary.DAL.Models;
 namespace WebDiary.DAL.Migrations
 {
     [DbContext(typeof(WebDiaryContext))]
-    partial class WebDiaryContextModelSnapshot : ModelSnapshot
+    [Migration("20231212201147_RenameGroups")]
+    partial class RenameGroups
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -174,37 +177,6 @@ namespace WebDiary.DAL.Migrations
                     b.ToTable("UserGroups");
                 });
 
-            modelBuilder.Entity("WebDiary.DAL.Models.Comment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .IsRequired()
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("EventId")
-                        .IsRequired()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Comments");
-                });
-
             modelBuilder.Entity("WebDiary.DAL.Models.Event", b =>
                 {
                     b.Property<Guid>("Id")
@@ -227,7 +199,7 @@ namespace WebDiary.DAL.Migrations
                     b.Property<DateTime>("End")
                         .HasColumnType("datetime");
 
-                    b.Property<Guid?>("GroupId")
+                    b.Property<Guid>("GroupId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("Start")
@@ -402,30 +374,13 @@ namespace WebDiary.DAL.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("WebDiary.DAL.Models.Comment", b =>
-                {
-                    b.HasOne("WebDiary.DAL.Models.Event", "Event")
-                        .WithMany("Comments")
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WebDiary.DAL.Models.User", "User")
-                        .WithMany("Comments")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Event");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("WebDiary.DAL.Models.Event", b =>
                 {
                     b.HasOne("WebDiary.DAL.Models.Group", "Group")
                         .WithMany("Events")
-                        .HasForeignKey("GroupId");
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("WebDiary.DAL.Models.User", "User")
                         .WithMany("Events")
@@ -438,11 +393,6 @@ namespace WebDiary.DAL.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("WebDiary.DAL.Models.Event", b =>
-                {
-                    b.Navigation("Comments");
-                });
-
             modelBuilder.Entity("WebDiary.DAL.Models.Group", b =>
                 {
                     b.Navigation("Events");
@@ -450,8 +400,6 @@ namespace WebDiary.DAL.Migrations
 
             modelBuilder.Entity("WebDiary.DAL.Models.User", b =>
                 {
-                    b.Navigation("Comments");
-
                     b.Navigation("Events");
                 });
 #pragma warning restore 612, 618

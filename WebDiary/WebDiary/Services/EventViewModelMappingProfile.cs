@@ -8,6 +8,10 @@ namespace WebDiary.Services
     {
         public EventViewModelMappingProfile() 
         {
+
+            CreateMap<GroupViewModel, GroupDTO>();
+            CreateMap<GroupDTO, GroupViewModel>();
+
             CreateMap<EventViewModel, EventDTO>();
             CreateMap<EventDTO, EventViewModel>();
         }
