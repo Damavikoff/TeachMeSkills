@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Diagnostics;
 using System.Security.Claims;
 using WebDiary.BLL.Models;
@@ -17,12 +18,14 @@ namespace WebDiary.Controllers
         private readonly IMapper _mapper;
         private readonly IEventService _eventService;
         private readonly IGroupService _groupService;
+        private readonly ICommentService _commentService;
 
-        public EventController(IEventService eventService, IGroupService groupService, IMapper mapper)
+        public EventController(IEventService eventService, IGroupService groupService, IMapper mapper, ICommentService commentService)
         {
             _eventService = eventService ?? throw new ArgumentNullException(nameof(eventService));
             _groupService = groupService ?? throw new ArgumentNullException(nameof(groupService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(eventService));
+            _commentService = commentService ?? throw new ArgumentNullException(nameof(commentService));
         }
         public IActionResult Index()
         {
@@ -100,11 +103,13 @@ namespace WebDiary.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ShowUserGroupsPartial()
+        public async Task<IActionResult> ShowUserGroupsDropDownPartial()
         {
             var result = await _groupService.ShowUserGroups(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var objsViewModels = _mapper.Map<List<GroupViewModel>>(result.Data);
             return PartialView(objsViewModels);
         }
+
+        
     }
 }

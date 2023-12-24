@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using WebDiary.BLL.Models;
 using WebDiary.BLL.Models.ServiceResponses;
 using WebDiary.BLL.Services.Interfaces;
 using WebDiary.DAL.Models;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace WebDiary.BLL.Services
 {
@@ -28,16 +26,16 @@ namespace WebDiary.BLL.Services
         /// <param name="end">
         /// Last date in the displayed calendar sheet
         /// </param>
-        /// <param name="userId">
+        /// <param name="authUserId">
         /// ID of an authenticated user
         /// </param>
-        public async Task<ServiceDataResponse<List<EventDTO>>> LoadEventsAsync(DateTime start, DateTime end, string userId)
+        public async Task<ServiceDataResponse<List<EventDTO>>> LoadEventsAsync(DateTime start, DateTime end, string authUserId)
         {
             //select events filtered by userid and date
-            var userEvents = await _webDiaryContext.Events.Where(u => u.UserId == userId).Where(d => d.Start >= start && d.End <= end).ToListAsync();
+            var userEvents = await _webDiaryContext.Events.Where(u => u.UserId == authUserId).Where(d => d.Start >= start && d.End <= end).ToListAsync();
 
             //select groups of user
-            var userGroups = await _webDiaryContext.Users.Where(u => u.Id == userId).SelectMany(g => g.Groups).ToListAsync();
+            var userGroups = await _webDiaryContext.Users.Where(u => u.Id == authUserId).SelectMany(g => g.Groups).ToListAsync();
 
             if (userEvents.Count == 0 && userGroups.Count == 0)
                 return ServiceDataResponse<List<EventDTO>>.Fail("There are no events!"); //this is success operation but with empty response -- for webapi

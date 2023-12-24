@@ -1,0 +1,49 @@
+﻿@model WebDiary.Models.CommentViewModel
+
+
+@* <div class="container mb-5">
+    <div class="row height d-flex justify-content-center align-items-center">
+        <div class="col-md-30">
+            <div class="card"> *@
+                <div class="d-flex flex-row align-items-center p-3 form-color"> @*mt-3 *@
+                    @*<img src="https://i.imgur.com/zQZSWrt.jpg" width="50" class="rounded-circle mr-2">*@
+                    <form asp-action="CreateCommentPartial" asp-controller="Comment" id="form">
+                        <input type="text" class="form-control" placeholder="Enter your comment..." asp-for="@Model.Content"> 
+                        <input type="hidden" class="form-control" asp-for="@Model.EventId">
+                        <input type="submit" value="Send" id="testsave" /> 
+                       
+                    </form>
+                    <script>
+                        $('#testsave').click(function (event) {
+                              event.preventDefault();
+                              event.stopImmediatePropagation();
+                              $('#form').submit();
+
+                            var commentdto =
+                            {
+                                content: $('#Content').val(),
+                                eventId: $('#EventId').val(),
+                            };
+                            $.ajax({
+                                url: "/Comment/CreateCommentPartial",
+                                data: JSON.stringify(commentdto),
+                                type: "POST",
+                                async: false, //запрос делается асинхронно и когда приходит ответ на запрос - сама функция уже закончила свое выполнение
+                                contentType: "application/json;charset=utf-8",
+                                dataType: "json",
+                                success: function (data) {
+                    $('#create-comment-section-partial').html(data);
+                                },
+                                error: function (errormessage) {
+                                    console.log(errormessage.responseText);
+                                }
+                            });
+                        });
+                    </script>
+                </div>
+            @* </div>
+        </div>
+    </div>
+</div> 
+
+ *@

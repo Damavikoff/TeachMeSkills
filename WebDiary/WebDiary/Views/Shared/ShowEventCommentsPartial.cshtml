@@ -1,0 +1,44 @@
+﻿@model List<CommentViewModel>
+
+@if (Model.Count != 0)
+{
+     
+    <div class="container"> @* mb-5*@
+        <div class="row height d-flex justify-content-center align-items-center">
+            <div class="prokrutka">
+            <div class="col-md-30">
+                <div class="card">
+                    <div class="mt-2">
+                        @foreach (CommentViewModel commentViewModel in @Model)
+                        {
+                           
+                            <div class="d-flex flex-row p-3">
+                                @* <img src="https://i.imgur.com/zQZSWrt.jpg" width="40" height="40" class="rounded-circle mr-3">*@
+                                <div class="w-100">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex flex-row align-items-center">
+                                            
+                                            @*   <span class="mr-2">@commentViewModel.User.UserName</span> *@
+                                                <small class="c-badge"><b>Nickname</b></small>
+                                        </div>
+                                            <small>@commentViewModel.CreatedDate.Value.ToString("dddd, dd MMMM yyyy")</small> @* ("MM/dd/yyyy HH:mm") *@
+                                            
+                                    </div>
+                                    <p class="text-justify comment-text mb-0">@commentViewModel.Content</p>
+                                    <div class="d-flex flex-row user-feed">
+                                            <span class="ml-1"><i class="fa fa-comments-o mr-2">Reply</i></span>
+                                            <span class="ml-1">Edit</span>
+                                            <span class="ml-1"><i class="fa fa-comments-o mr-2"><a asp-controller="Comment" asp-action="DeleteComment" asp-route-Id="@commentViewModel.Id">Delete</a></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                           
+                        }
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+        </div>
+    
+}

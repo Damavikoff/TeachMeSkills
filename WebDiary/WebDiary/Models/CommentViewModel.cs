@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WebDiary.DAL.Models
+namespace WebDiary.Models
 {
-    public partial class CommentViewModel
+    public class CommentViewModel
     {
         public Guid Id { get; set; }
 
@@ -11,14 +11,14 @@ namespace WebDiary.DAL.Models
         ErrorMessage = "Wrong USERID value")]
         public string? UserId { get; set; }
 
-        [Required]
-        public User? User { get; set; }
+        //[Required]
+        //public UserViewModel? User { get; set; }
 
         [Required]
         public Guid? EventId { get; set; }
 
-        [Required]
-        public Event? Event { get; set; }
+        //[Required]
+        //public EventViewModel? Event { get; set; }
 
         [Required]
         public string? Content { get; set; }

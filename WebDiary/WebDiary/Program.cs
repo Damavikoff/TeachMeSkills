@@ -1,10 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using System;
 using WebDiary.BLL.Services;
 using WebDiary.BLL.Services.Interfaces;
 using WebDiary.DAL.Models;
 using WebDiary.Services;
-using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +13,7 @@ builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfi
 
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
 
 builder.Services.AddAutoMapper(typeof(EventDTOMappingProfile), typeof(EventViewModelMappingProfile));
 
@@ -44,6 +43,6 @@ app.UseEndpoints(endpoints =>
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Event}/{action=Index}/{id?}");
+    pattern: "{controller=Event}/{action=Index}/");
 
 app.Run();

@@ -30,31 +30,6 @@
                     meridiem: true //am pm
                 },
 
-                //events: '/Home/LoadEvents', //ajax
-                //datesSet: function (info) {
-                //    var startDate = info.start;
-                //    var endDate = info.end;
-                //},
-
-                //events: (info, successCallback, failureCallback) => {
-                //   // debugger;
-                //    $.ajax({
-                //        type: "GET",
-                //        url: "/Event/LoadEvents",
-                //        data: {
-                //            // our hypothetical feed requires UNIX timestamps
-                //            start: info.startStr,
-                //            end: info.endStr
-                //        },
-                //        success: function (res) {
-                //            console.log(res);
-                //        },
-                //        false: function (errormessage) {
-                //            alert(errormessage.responseText);
-                //        }
-                //    });
-                //},
-
                 events: {
                     url: '/Event/LoadEvents',
                     method: 'GET',
@@ -74,10 +49,13 @@
                 eventClick: function(info) {
                     info.jsEvent.preventDefault(); // don't let the browser navigate
 
-                    var resp = GetDetails(info.event.id);
+                    var resp = GetEventDetails(info.event.id);
                     if (typeof resp.responseJSON === 'object' || resp.responseJSON instanceof Object) { //мне не нравится вся эта проверка на стороне клиента, и как в js методах работает тоже, надо поправить
-                        ShowEventPopupValues(resp.responseJSON);
+                        ShowEventFulledModal(resp.responseJSON);
                     }
+
+                    ShowEventComments(info.event.id);
+                    CreateComment(info.event.id);
 
                     if (info.event.url) { // open in another tab
                         window.open(info.event.url);
@@ -85,8 +63,8 @@
                 },
 
                 dateClick: function (date, allDay, jsEvent, view) {
-                    var start_date = moment(date.dateStr).format('YYYY-MM-DDTHH:MM');
-                    ShowEventPopup(start_date);
+                    var start_date = moment(date.dateStr).format('YYYY-MM-DDTHH:mm');
+                    ShowEventEmptyModal(start_date);
                 },
 
                 eventDidMount: function (info) {
@@ -129,7 +107,7 @@
             }
         });
 
-        function ClearPopupFormValues() {
+        function ClearEventModal() {
             //clear forms after closing
             $('#Title').val("");
             $('#Description').val("");
@@ -142,8 +120,8 @@
             $('#Group').val("null");
         }
 
-        function ShowEventPopup(sendDate) {
-            ClearPopupFormValues();
+        function ShowEventEmptyModal(sendDate) {
+            ClearEventModal();
             $('#Start').val(sendDate);
             $('#End').val(sendDate);  //value="2020-03-13T18:22" seconds from number of month
             $('#schedule :input').prop('disabled', false);
@@ -156,8 +134,8 @@
             $('#Title').focus();
         }
         
-        function ShowEventPopupValues(res) {
-            ClearPopupFormValues();
+        function ShowEventFulledModal(res) {
+            ClearEventModal();
             $('#Id').val(res.id);
             $('#Title').val(res.title);
             if (res.groupId == null) {
@@ -199,7 +177,33 @@
             $('#completed').show();
         }
 
-        function GetDetails(id) {
+        function ShowEventComments(id) {
+             $.ajax({
+                type: "GET",
+                url: "/Comment/ShowEventCommentsPartial",
+                data: { id: id },
+                dataType: 'html',
+                success: function (data) {
+                    console.log('Success');
+                    $('#show-event-comments-partial').html(data);
+                    $('#EventId').val(id);
+                }
+            });
+        }
+
+        function CreateComment(id) {
+            $.ajax({
+                type: "GET",
+                url: "/Comment/CreateCommentPartial",
+                dataType: 'html',
+                success: function (data) {
+                    console.log('Success');
+                    $('#create-comment-section-partial').html(data);
+                }
+            });
+        }
+
+        function GetEventDetails(id) {
             return $.ajax({
                 dataType: 'json',
                 type: "GET",
@@ -327,80 +331,92 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <form>
-            <div class="modal-header">
-                <h4 class="modal-title">Your Schedule</h4>
+                <div class="modal-header">
+                 <h4 class="modal-title">Your Schedule</h4>
                     <div class="form-group">
                         <label for="Completed" id="completed"><b>Done</b></label>
                         <input type="checkbox" id="Completed">
                     </div>
-            </div>
-                    <div class="modal-body">
+                </div>
+                <div class="modal-body">
                     <input type="hidden" class="form-control" id="Id">
                     <input type="hidden" class="form-control" id="UserId">
                     <div class="form-group">
-                        <label for="Title">Title</label>
-                        <input type="text" class="form-control" id="Title" required>
+                        <label for="Title"><b>Title</b></label>
+                         <input type="text" class="form-control" id="Title" placeholder="Feed the cat" required>
                     </div>
                     <div class="form-group">
-                        <label for="Start">Start</label> 
+                        <label for="Start"><i>Start</i></label>
                         <input type="datetime-local" class="form-control" id="Start" required>
                     </div>
                     <div class="form-group">
-                        <label for="End">End</label>
-                        <input type="datetime-local" class="form-control" id="End" required>
+                         <label for="End">End</label>
+                             <input type="datetime-local" class="form-control" id="End" required>
                     </div>
                     <div class="form-group">
-                        <label for="Description">Description</label>
-                        <input type="text" class="form-control" id="Description"> @*maxlength*@
+                         <label for="Description">Description</label>
+                         <input type="text" class="form-control" id="Description" placeholder="Food with salmon, not tomatoes"> @*maxlength*@
                     </div>
                     <div class="form-group">
-                        <label for="AllDay">All day</label>
-                        <input type="checkbox" id="AllDay"> <label>Yes</label>
+                         <label for="AllDay">All day</label>
+                             <input type="checkbox" id="AllDay"> <label>Yes</label>
                     </div>
                     <div class="form-group">
-                        <label for="Url">Url</label>
-                        <input type="URL" class="form-control" id="Url">
+                         <label for="Url">Url</label>
+                         <input type="URL" class="form-control" id="Url" placeholder="https://food-for-every-cat.com">
                     </div>
                     <div class="form-group">
-                        <label for="BackgroundColor">Priority</label>
-                        <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#a895e2"> <label>High</label>
-                        <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#5fbe7d" required> <label>Normal</label>
-                        <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#69b1ff"> <label>Low</label>
+                         <label for="BackgroundColor">Priority</label>
+                             <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#a895e2"> <label>High</label>
+                             <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#5fbe7d" required> <label>Normal</label>
+                             <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#69b1ff"> <label>Low</label>
                     </div>
                     <script>
-                    $(document).ready(function () {
-                    $('#partial-load').load('/Event/ShowUserGroupsPartial');
-                    });
-                    </script>
-                    <div id="partial-load"></div>
-
-                    @*  @await Component.InvokeAsync("TestViewComponent"); *@
-                    
-                    @* <script>
-                        $.ajax({
-                            // edit to add steve's suggestion.
-                            //url: "/ControllerName/ActionName",
-                            type: "GET",
-                            url: "/Event/ShowUserGroupsPartial",
-                            success: function (data) {
-                                
-                                $("#someDiv").html(data);
-                            }
+                        $(document).ready(function () {
+                            $('#group-selector-partial').load('/Event/ShowUserGroupsDropDownPartial');
                         });
-                     </script>  *@
-                    
-                    <div class="modal-footer">
-                <button type="submit" class="btn btn-danger" id="btnDelete" formnovalidate="formnovalidate" onclick="return Delete();">Delete event</button>  @*//formnovalidate?*@
-                <button type="submit" class="btn btn-success" id="btnSave">Create</button>
-                        @*//form validation is the form been validated before submit. 
-                        //So if you want to use HTML 5 default form validation with the submit button which has an onclick event, 
-                        //the form validation will not work as it is skipped, because these validations are performed when the form is submitted, 
-                        //in fact the button with onclick method just call a normal js function.*@
-                <button type="submit" class="btn btn-success" id="btnEdit">Save</button>
-                <button type="button" class="btn btn-danger" data-dismiss="modal" id="btnClose">Close</button>
+                    </script>
+                <div id="group-selector-partial"></div>
+                </div>
+                <div class="modal-footer">
+                     <button type="submit" class="btn btn-danger" id="btnDelete" formnovalidate="formnovalidate" onclick="return Delete();">Delete event</button>  @*//formnovalidate?*@
+                     <button type="submit" class="btn btn-success" id="btnSave">Create</button>
+                     <button type="submit" class="btn btn-success" id="btnEdit">Save</button>
+                     <button type="button" class="btn btn-danger" data-dismiss="modal" id="btnClose">Close</button>
+                </div>
+            </form>
+
+            <div id="show-event-comments-partial"> 
+                @{
+                    Html.RenderPartial("ShowEventCommentsPartial", new List<CommentViewModel>());
+                }
             </div>
-                </form>
+            <div id="create-comment-section-partial">
+                @* @{
+                    Html.RenderPartial("CreateCommentPartial", new CommentViewModel());
+                } *@
             </div>
+            @*comment section here*@
+            
+
+            @* @await Component.InvokeAsync("CommentComponent", new { eventId = "zxcvb", authUserId = @User.FindFirstValue(ClaimTypes.NameIdentifier) }) *@
+
+            @* <script>
+                $.ajax({
+                    debugger;
+                    var id = $('#Id').val();
+                    // edit to add steve's suggestion.
+                    //url: "/ControllerName/ActionName",
+                    type: "GET",
+                    url: "/Event/ShowEventCommentsPartial",
+                    data: {id : id},
+                    success: function (data) {
+                        $("#someDiv").html(data);
+                    }
+                });
+            </script> *@
+
+            
         </div>
     </div>
 </div>

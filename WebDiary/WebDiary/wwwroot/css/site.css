@@ -54,3 +54,16 @@
     background-color: white !important;
     border-color: #FFFFFF !important;
 }
+
+.modal-dialog {
+    max-width: 500px;
+    margin: 1.75rem auto;
+}
+
+.prokrutka {
+    width: auto; /* ширина нашего блока */
+    height: 200px; /* высота нашего блока */
+    background: #E7E7E7; /* цвет фона, белый */
+    border: 1px solid #C1C1C1; /* размер и цвет границы блока */
+    overflow: auto; /* свойство для прокрутки по горизонтали. Автоматом, если больше блока */
+}

@@ -14,6 +14,9 @@ namespace WebDiary.Services
 
             CreateMap<EventViewModel, EventDTO>();
             CreateMap<EventDTO, EventViewModel>();
+
+            CreateMap<CommentViewModel, CommentDTO>();
+            CreateMap<CommentDTO, CommentViewModel>();
         }
     }
 }
