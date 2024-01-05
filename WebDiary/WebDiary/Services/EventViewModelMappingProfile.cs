@@ -16,7 +16,8 @@ namespace WebDiary.Services
             CreateMap<EventDTO, EventViewModel>();
 
             CreateMap<CommentViewModel, CommentDTO>();
-            CreateMap<CommentDTO, CommentViewModel>();
+            CreateMap<CommentDTO, CommentViewModel>()
+                .ForMember(d => d.Email, o => o.MapFrom(s => s.User.Email));
         }
     }
 }

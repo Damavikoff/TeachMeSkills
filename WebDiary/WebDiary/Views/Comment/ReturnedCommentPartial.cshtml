@@ -1,0 +1,69 @@
+﻿@using System.Security.Claims;
+@model CommentViewModel
+
+@*если список комментов пуст, то....*@
+
+<div class="d-flex flex-row p-3">
+    @* <img src="https://i.imgur.com/zQZSWrt.jpg" width="40" height="40" class="rounded-circle mr-3">*@
+    <div class="w-100">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-row align-items-center">
+                <input type="hidden" class="commentId" value="@Model.Id">
+                <input type="hidden" class="eventId" value="@Model.EventId">
+                @*   <span class="mr-2">@commentViewModel.User.UserName</span> *@
+                <small class="c-badge"><b>Nickname</b></small>
+            </div>
+            <small>@Model.CreatedDate.Value.ToString("HH:mm MM/dd/yyyy")</small>
+        </div>
+        <p class="text-justify comment-text mb-0">@Model.Content</p>
+        <div class="d-flex flex-row user-feed">
+            @if (Model.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+            {
+                <span class="ml-1"><i>Edit</i></span>
+                <span class="commentDelete"><i>Delete</i></span>
+            }
+            else
+            {
+                <span class="ml-1"><i>Reply</i></span>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    $('.commentDelete').click(function (event) { 
+        event.preventDefault();
+
+        var commentId = $(this)
+            .closest('.w-100') // goes up in the tree until .w-100
+            .children('.align-items-center')
+            .children('.align-items-center')
+            .find('.commentId').val();
+
+        var eventId = $(this)
+            .closest('.w-100')
+            .children('.align-items-center')
+            .children('.align-items-center')
+            .find('.eventId').val();
+
+        var commentdto =
+        {
+            id: commentId,
+            eventId: eventId
+        };
+
+        $.ajax({
+            url: "/Comment/DeleteComment",
+            data: JSON.stringify(commentdto),
+            type: "POST",
+            contentType: "application/json;charset=utf-8",
+            dataType: "html",
+            success: function (data) {
+                $('#show-event-comments-partial').html(data);
+            },
+            error: function (errormessage) {
+                console.log(errormessage.responseText);
+            }
+        });
+    });
+</script>

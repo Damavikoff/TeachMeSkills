@@ -63,7 +63,7 @@ namespace WebDiary.BLL.Services
                 if (userEvents.Count == 0)
                     return ServiceDataResponse<List<EventDTO>>.Fail("There are no events!"); //for webapi should return empty body
 
-                var objsDTO = _mapper.Map<List<EventDTO>>(groupEvents);
+                var objsDTO = _mapper.Map<List<EventDTO>>(userEvents);
 
                 return ServiceDataResponse<List<EventDTO>>.Success(objsDTO);
             }

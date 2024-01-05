@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 
 namespace WebDiary.DAL.Models;
 
@@ -58,6 +59,11 @@ public partial class WebDiaryContext : IdentityDbContext<User>
         .WithOne(e => e.Group)
         .HasForeignKey(e => e.GroupId);
         //.IsRequired();
+
+        modelBuilder.Entity<Comment>()
+        .HasOne(p => p.Event).WithMany(b => b.Comments)
+        .HasForeignKey(p => p.EventId)
+        .OnDelete(DeleteBehavior.Cascade); //!
 
         base.OnModelCreating(modelBuilder);
         OnModelCreatingPartial(modelBuilder);

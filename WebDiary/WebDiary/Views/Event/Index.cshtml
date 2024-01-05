@@ -7,6 +7,7 @@
 
 @section scripts{
     <script>
+        let someCalendar = null;
         document.addEventListener('DOMContentLoaded', function () {
             var calendarEl = document.getElementById('calendar');
             var calendar = new FullCalendar.Calendar(calendarEl, {
@@ -30,21 +31,24 @@
                     meridiem: true //am pm
                 },
 
-                events: {
-                    url: '/Event/LoadEvents',
-                    method: 'GET',
-                    extraParams: {
-                        custom_param1: 'something',
-                        custom_param2: 'somethingelse'
-                    },
-                    success: function(res) {
-                        //debugger;
-                        console.log(res.Message);
-                    },
-                    failure: function () {
-                        alert('There was an error while fetching events!'); //error message from controller
-                    }
-                },
+                //TODO: function(){} if null, then load message "no events" and 'events: []'. Events function already async
+                //https://stackoverflow.com/questions/62618806/error-error-uncaught-in-promise-typeerror-this-products-is-not-iterable-b
+                events: '/Event/LoadEvents',
+                // {
+                //     url: '/Event/LoadEvents',
+                //     method: 'GET',
+                //     extraParams: {
+                //         custom_param1: 'something',
+                //         custom_param2: 'somethingelse'
+                //     },
+                //     success: function(res) {
+                //         //debugger;
+                //         console.log(res.Message);
+                //     },
+                //     failure: function () {
+                //         alert('There was an error while fetching events!'); //error message from controller
+                //     }
+                // },
 
                 eventClick: function(info) {
                     info.jsEvent.preventDefault(); // don't let the browser navigate
@@ -78,6 +82,7 @@
                 }
             });
             calendar.render();
+            someCalendar = calendar;
         });
 
         $('#btnClose').click(function () {
@@ -85,7 +90,9 @@
         });
 
         //onclick does not honor html5 validation
-        $("#btnSave").click(function () {
+        $("#btnSave").click(function (event) {
+            event.preventDefault();
+
             if ($("#Title")[0].checkValidity() && $("#Start")[0].checkValidity() && 
                 $("#End")[0].checkValidity() && $("#Description")[0].checkValidity() &&
                 $("#BackgroundColor")[0].checkValidity() && $("#Url")[0].checkValidity()) {
@@ -96,7 +103,9 @@
             }
         });
 
-        $("#btnEdit").click(function () {
+        $("#btnEdit").click(function (event) {
+            event.preventDefault();
+
             if ($("#Title")[0].checkValidity() && $("#Start")[0].checkValidity() &&
                 $("#End")[0].checkValidity() && $("#Description")[0].checkValidity() &&
                 $("#BackgroundColor")[0].checkValidity() && $("#Url")[0].checkValidity()) {
@@ -108,7 +117,6 @@
         });
 
         function ClearEventModal() {
-            //clear forms after closing
             $('#Title').val("");
             $('#Description').val("");
             $('#Start').val("");
@@ -123,10 +131,12 @@
         function ShowEventEmptyModal(sendDate) {
             ClearEventModal();
             $('#Start').val(sendDate);
-            $('#End').val(sendDate);  //value="2020-03-13T18:22" seconds from number of month
+            $('#End').val(sendDate);
             $('#schedule :input').prop('disabled', false);
             //$('#btnClose').prop('disabled', false);
             $('#schedule').modal('show');
+            $("#show-event-comments-partial").html("");
+            $("#create-comment-section-partial").html("");
             $('#btnSave').show();
             $('#btnEdit').hide();
             $('#Completed').hide();
@@ -160,7 +170,7 @@
                 // $('#btnSave').hide();
                 // $('#btnEdit').hide();
                 // $('#btnDelete').hide();
-                $('#schedule :input').prop('disabled', true);
+                $('#schedule :input').prop('disabled', true); //или удалить их ваще??? зачем маячат выключенные перед глазами
                 $('#btnClose').prop('disabled', false);
             }
             else {
@@ -184,7 +194,6 @@
                 data: { id: id },
                 dataType: 'html',
                 success: function (data) {
-                    console.log('Success');
                     $('#show-event-comments-partial').html(data);
                     $('#EventId').val(id);
                 }
@@ -197,8 +206,8 @@
                 url: "/Comment/CreateCommentPartial",
                 dataType: 'html',
                 success: function (data) {
-                    console.log('Success');
                     $('#create-comment-section-partial').html(data);
+                    $('#EventId').val(id);
                 }
             });
         }
@@ -222,6 +231,7 @@
         }
 
         function Add() {
+
             var eventdto =
             {
                 userId: '@User.FindFirstValue(ClaimTypes.NameIdentifier)',
@@ -244,13 +254,13 @@
                 url: "/Event/CreateEvent",
                 data: JSON.stringify(eventdto),
                 type: "POST",
-                async: false, //запрос делается асинхронно и когда приходит ответ на запрос - сама функция уже закончила свое выполнение
+                //async: false, //запрос делается асинхронно и когда приходит ответ на запрос - сама функция уже закончила свое выполнение
                 contentType: "application/json;charset=utf-8",
                 dataType: "json",
                 success: function (result) {
                     $('#schedule').modal('hide');
                     alert(result);
-                    $('#calendar').fullCalendar('refetchEvents');
+                    someCalendar.refetchEvents();
                 },
                 error: function (errormessage) {
                     //var data = errormessage.responseJSON;
@@ -265,7 +275,9 @@
             });
         }
 
-        function Delete() {
+        function Delete(event) {
+            event.preventDefault();
+
             const result = confirm('Are you sure to delete event "' + $('#Title').val() + '" ?');
             if (result) {
                 var eventId = $('#Id').val();
@@ -278,7 +290,7 @@
                     success: function (result) { //why it is not working from the first time? if i waiting for success
                         $('#schedule').modal('hide');
                         alert(result);
-                        $('#calendar').fullCalendar('refetchEvents');
+                        someCalendar.refetchEvents();
                     },
                     error: function (errormessage) {
                         alert(errormessage.responseText);
@@ -315,7 +327,7 @@
                 success: function (result) {
                     $('#schedule').modal('hide');
                     alert(result);
-                    $('#calendar').fullCalendar('refetchEvents');
+                    someCalendar.refetchEvents();
                 },
                 error: function (errormessage) {
                     alert(errormessage.responseText);
@@ -371,51 +383,26 @@
                              <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#5fbe7d" required> <label>Normal</label>
                              <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#69b1ff"> <label>Low</label>
                     </div>
+                    
                     <script>
                         $(document).ready(function () {
                             $('#group-selector-partial').load('/Event/ShowUserGroupsDropDownPartial');
                         });
                     </script>
-                <div id="group-selector-partial"></div>
+                    <div id="group-selector-partial"> </div>
                 </div>
                 <div class="modal-footer">
-                     <button type="submit" class="btn btn-danger" id="btnDelete" formnovalidate="formnovalidate" onclick="return Delete();">Delete event</button>  @*//formnovalidate?*@
+                     <button type="submit" class="btn btn-danger" id="btnDelete" formnovalidate="formnovalidate" onclick="return Delete(event);">Delete event</button>  @*//formnovalidate?*@
                      <button type="submit" class="btn btn-success" id="btnSave">Create</button>
                      <button type="submit" class="btn btn-success" id="btnEdit">Save</button>
                      <button type="button" class="btn btn-danger" data-dismiss="modal" id="btnClose">Close</button>
                 </div>
             </form>
 
-            <div id="show-event-comments-partial"> 
-                @{
-                    Html.RenderPartial("ShowEventCommentsPartial", new List<CommentViewModel>());
-                }
-            </div>
-            <div id="create-comment-section-partial">
-                @* @{
-                    Html.RenderPartial("CreateCommentPartial", new CommentViewModel());
-                } *@
-            </div>
+
             @*comment section here*@
-            
-
-            @* @await Component.InvokeAsync("CommentComponent", new { eventId = "zxcvb", authUserId = @User.FindFirstValue(ClaimTypes.NameIdentifier) }) *@
-
-            @* <script>
-                $.ajax({
-                    debugger;
-                    var id = $('#Id').val();
-                    // edit to add steve's suggestion.
-                    //url: "/ControllerName/ActionName",
-                    type: "GET",
-                    url: "/Event/ShowEventCommentsPartial",
-                    data: {id : id},
-                    success: function (data) {
-                        $("#someDiv").html(data);
-                    }
-                });
-            </script> *@
-
+            <div id="show-event-comments-partial"> </div>
+            <div id="create-comment-section-partial"> </div>
             
         </div>
     </div>

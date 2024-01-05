@@ -18,14 +18,12 @@ namespace WebDiary.Controllers
         private readonly IMapper _mapper;
         private readonly IEventService _eventService;
         private readonly IGroupService _groupService;
-        private readonly ICommentService _commentService;
 
         public EventController(IEventService eventService, IGroupService groupService, IMapper mapper, ICommentService commentService)
         {
             _eventService = eventService ?? throw new ArgumentNullException(nameof(eventService));
             _groupService = groupService ?? throw new ArgumentNullException(nameof(groupService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(eventService));
-            _commentService = commentService ?? throw new ArgumentNullException(nameof(commentService));
         }
         public IActionResult Index()
         {
@@ -45,12 +43,13 @@ namespace WebDiary.Controllers
 
             var result = await _eventService.LoadEventsAsync(start, end, userId);
 
-            if (result.Succeeded == false)
-            {
-                return Json(result); //как-то поправить + при загрузке ивентов только на месяц каждую прокрутку будет ругаться?
-            }
+            //if (result.Succeeded == false)
+            //{
+            //    return Json(result); //
+            //}
 
             var objsViewModels = _mapper.Map<List<EventViewModel>>(result.Data);
+
             return Json(objsViewModels);
         }
 

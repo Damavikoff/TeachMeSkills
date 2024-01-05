@@ -1,44 +1,266 @@
-﻿@model List<CommentViewModel>
+﻿@using System.Security.Claims;
+@model List<CommentViewModel>
 
-@if (Model.Count != 0)
-{
-     
-    <div class="container"> @* mb-5*@
-        <div class="row height d-flex justify-content-center align-items-center">
-            <div class="prokrutka">
+
+<div class="container">
+    <div class="row height d-flex justify-content-center align-items-center">
+        <div class="prokrutka">
             <div class="col-md-30">
                 <div class="card">
                     <div class="mt-2">
-                        @foreach (CommentViewModel commentViewModel in @Model)
+                        @* @if (Model.Count != 0)
+                        { *@
+                        @foreach (CommentViewModel commentViewModel in Model)
                         {
-                           
                             <div class="d-flex flex-row p-3">
                                 @* <img src="https://i.imgur.com/zQZSWrt.jpg" width="40" height="40" class="rounded-circle mr-3">*@
                                 <div class="w-100">
+                                    <input type="hidden" class="commentId" value="@commentViewModel.Id">
                                     <div class="d-flex justify-content-between align-items-center">
+
                                         <div class="d-flex flex-row align-items-center">
-                                            
                                             @*   <span class="mr-2">@commentViewModel.User.UserName</span> *@
-                                                <small class="c-badge"><b>Nickname</b></small>
+                                            <input type="hidden" class="commentId" value="@commentViewModel.Id">
+                                            <input type="hidden" class="eventId" value="@commentViewModel.EventId">
+                                            <small class="c-badge"><b>@commentViewModel.Email</b></small>
                                         </div>
-                                            <small>@commentViewModel.CreatedDate.Value.ToString("dddd, dd MMMM yyyy")</small> @* ("MM/dd/yyyy HH:mm") *@
-                                            
+                                        <small>@commentViewModel.CreatedDate.Value.ToString("HH:mm MM/dd/yyyy")</small> @* ("dddd, dd MMMM yyyy") *@
                                     </div>
                                     <p class="text-justify comment-text mb-0">@commentViewModel.Content</p>
                                     <div class="d-flex flex-row user-feed">
-                                            <span class="ml-1"><i class="fa fa-comments-o mr-2">Reply</i></span>
-                                            <span class="ml-1">Edit</span>
-                                            <span class="ml-1"><i class="fa fa-comments-o mr-2"><a asp-controller="Comment" asp-action="DeleteComment" asp-route-Id="@commentViewModel.Id">Delete</a></i></span>
+                                        @if (commentViewModel.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+                                        {
+                                            <span class="commentEdit"><i>Edit</i></span>
+                                            @*  <span class="ml-1"><i class="fa fa-comments-o mr-2">
+                                    <a asp-controller="Comment" asp-action="DeleteComment" asp-route-Id="@commentViewModel.Id">
+                                    Delete</a></i></span> *@
+                                            <span class="commentDelete"><i>Delete</i></span>
+                                        }
+                                        else
+                                        {
+                                            <span class="ml-1"><i>Reply</i></span>
+                                        }
                                     </div>
                                 </div>
                             </div>
-                           
                         }
+                        @* } *@
                     </div>
                 </div>
             </div>
-            </div>
         </div>
-        </div>
-    
-}
+    </div>
+</div>
+
+<script>
+    $('.commentDelete').click(function (event) {
+        event.preventDefault();
+
+        var commentId = $(this)
+            .closest('.w-100') // goes up in the tree until .w-100
+            .children('.align-items-center')
+            .children('.align-items-center')
+            .find('.commentId').val();
+
+        var eventId = $(this)
+            .closest('.w-100')
+            .children('.align-items-center')
+            .children('.align-items-center')
+            .find('.eventId').val();
+
+        var commentdto =
+        {
+            id: commentId,
+            eventId: eventId
+        };
+
+        $.ajax({
+            url: "/Comment/DeleteComment",
+            data: JSON.stringify(commentdto),
+            type: "POST",
+            contentType: "application/json;charset=utf-8",
+            dataType: "html",
+            success: function (data) {
+                $('#show-event-comments-partial').html(data);
+            },
+            error: function (errormessage) {
+                console.log(errormessage.responseText);
+            }
+        });
+    });
+</script>
+
+<script>
+    /**
+    * Check if a database exists
+    * param {string} name Database name
+    * param {function} callback Function to return the response
+    * returns {bool} True if the database exists
+    */
+    var db;
+    function databaseExists(name, callback) { //if db not exist
+        var dbExists = true;
+        var request = window.indexedDB.open(name);
+        request.onupgradeneeded = function (e) {
+            //The upgradeneeded event is fired when an attempt was made to open a database with a version number higher than its current version.
+            if (request.result.version === 1) {
+                dbExists = false;
+                //window.indexedDB.deleteDatabase(name);
+                db = e.target.result;
+                // //You can't create an objectStore in an onsuccess method. You can only do this in a upgradeneeded event.
+                var objectstore = db.createObjectStore("comments", {
+                    autoIncrement: false,
+                });
+                //objectstore.createIndex("ID", "ID", { unique: true });
+                objectstore.createIndex("comment", "comment", { unique: false });
+                //db.close();
+                if (callback) callback(objectstore);
+                //если не существует, то создается и существует
+            }
+        };
+        //https://stackoverflow.com/questions/52137882/indexeddb-add-record-to-objectstore-only-works-once
+    }
+    function addNewRecord(name, data) {
+        var request = window.indexedDB.open(name);
+        request.onsuccess = function (e) {
+            //clear db
+            db = e.target.result;
+            const transaction = db.transaction(["comments"], "readwrite");
+            const objectStore = transaction.objectStore("comments");
+            objectStore.add(data.comment, data.ID);
+            //db.close();
+            //если существует, то существует
+
+        };
+    }
+
+    async function getData(key) {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(["comments"], "readwrite");
+            const objectStore = transaction.objectStore("comments");
+            const request = objectStore.get(key);
+            request.onerror = (event) => {
+                // Handle errors!
+            };
+            request.onsuccess = (event) => {
+                // Do something with the request.result!
+                resolve(request.result);
+            };
+        })
+
+    }
+    function getValue(key) {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(["comments"], "readwrite");
+            const objectStore = transaction.objectStore("comments");
+            const request = objectStore.get(key);
+            request.onerror = (event) => {
+                // Handle errors!
+            };
+            request.onsuccess = (event) => {
+                // Do something with the request.result!
+                resolve(request.result);
+            };
+        })
+    }
+
+    $('.commentEdit').click(function (event) {
+        event.preventDefault();
+
+        var name = "CommentsDB";
+        databaseExists(name, function (db) { //peredavat suda if error
+        });
+
+        var commentId = $(this)
+            .closest('.w-100') // goes up in the tree until .w-100
+            .children('.align-items-center')
+            .children('.align-items-center')
+            .find('.commentId').val();
+
+
+        var text = $(this).parent().prev('.text-justify').text();
+
+        console.log(text + " 0");
+        if ($(this).text() == 'Edit') { //с едит на саве
+            $(this).parent().prev('.text-justify').prop('contenteditable', true);
+            $(this).parent().prev('.text-justify').focus();
+            $(this).text('Save');
+
+            $(".w-100").each((index, element) => {
+                var data = {
+                    ID: $(element).find(".align-items-center .commentId").val(),
+                    comment: $(element).children("p").text()
+                };
+                addNewRecord(name, data);
+            });
+        }
+        else { // с саве на едит
+            //сверка комментов с загруженными
+
+            let outerResult = null;
+            async function blah() {
+                outerResult = await getValue(commentId);
+            }
+            outerResult =  blah();
+            console.log(outerResult);
+            //////////////
+            async function getComment() {
+                const result = await getData(commentId);
+                return result;
+            }
+
+            var test;
+            var testasync;
+            var async; 
+
+            var sample = (async () => {
+                test = await getData(commentId);
+                console.log("test: " + test);
+                return test;
+            })()
+            test = sample;
+
+            console.log("test: " + test);
+            console.log("sample: " + sample);
+            console.log("test2: " + test);
+
+
+
+
+
+
+
+            //if changed comment is empty
+            if ($(this).parent().prev('.text-justify').text().length === 0) {
+                console.log(text + " 1");
+                $(this).parent().prev('.text-justify').text() == text;
+                //red background
+            }
+            else {
+                //console.log(text + " 3");
+                //$('#comment').removeAttr('contenteditable');
+                //$(this).parent().prev('.text-justify').removeAttr('contenteditable');
+                $(this).parent().prev('.text-justify').prop('contenteditable', false);
+                $(this).text('Edit');
+                console.log("test2: " + test);
+            }
+            //TODO:
+            //code to save the only content // patch on controller
+        }
+        // var content = $(this).parent().prev('.text-justify').val(); // ?
+
+        // $.ajax({
+        //     url: "/Comment/UpdateComment",
+        //     data: JSON.stringify(content),
+        //     type: "POST",
+        //     contentType: "application/json;charset=utf-8",
+        //     dataType: "html",
+        //     success: function (data) {
+        //         //do nothing?
+        //     },
+        //     error: function (errormessage) {
+        //         console.log(errormessage.responseText);
+        //     }
+        // });
+    });
+</script> 

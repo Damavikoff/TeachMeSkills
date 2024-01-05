@@ -171,7 +171,7 @@ namespace WebDiary.DAL.Migrations
 
                     b.HasIndex("GroupsId");
 
-                    b.ToTable("UserGroups");
+                    b.ToTable("UserGroups", (string)null);
                 });
 
             modelBuilder.Entity("WebDiary.DAL.Models.Comment", b =>
@@ -202,7 +202,7 @@ namespace WebDiary.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comments", (string)null);
                 });
 
             modelBuilder.Entity("WebDiary.DAL.Models.Event", b =>
@@ -253,7 +253,7 @@ namespace WebDiary.DAL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Events");
+                    b.ToTable("Events", (string)null);
                 });
 
             modelBuilder.Entity("WebDiary.DAL.Models.Group", b =>
@@ -268,7 +268,7 @@ namespace WebDiary.DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Groups");
+                    b.ToTable("Groups", (string)null);
                 });
 
             modelBuilder.Entity("WebDiary.DAL.Models.User", b =>

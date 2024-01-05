@@ -10,12 +10,12 @@ namespace WebDiary.Models
         [RegularExpression("^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$",
         ErrorMessage = "Wrong USERID value")]
         public string? UserId { get; set; }
-
+        public string? Email { get; set; }
         //[Required]
         //public UserViewModel? User { get; set; }
 
         [Required]
-        public Guid? EventId { get; set; }
+        public Guid EventId { get; set; }
 
         //[Required]
         //public EventViewModel? Event { get; set; }
