@@ -98,6 +98,7 @@
     * returns {bool} True if the database exists
     */
     var db;
+
     function databaseExists(name, callback) { //if db not exist
         var dbExists = true;
         var request = window.indexedDB.open(name);
@@ -164,7 +165,7 @@
         })
     }
 
-    $('.commentEdit').click(function (event) {
+    $('.commentEdit').click(async function (event) {
         event.preventDefault();
 
         var name = "CommentsDB";
@@ -176,7 +177,6 @@
             .children('.align-items-center')
             .children('.align-items-center')
             .find('.commentId').val();
-
 
         var text = $(this).parent().prev('.text-justify').text();
 
@@ -196,53 +196,17 @@
         }
         else { // с саве на едит
             //сверка комментов с загруженными
-
-            let outerResult = null;
-            async function blah() {
-                outerResult = await getValue(commentId);
-            }
-            outerResult =  blah();
-            console.log(outerResult);
-            //////////////
-            async function getComment() {
-                const result = await getData(commentId);
-                return result;
-            }
-
-            var test;
-            var testasync;
-            var async; 
-
-            var sample = (async () => {
-                test = await getData(commentId);
-                console.log("test: " + test);
-                return test;
-            })()
-            test = sample;
-
-            console.log("test: " + test);
-            console.log("sample: " + sample);
-            console.log("test2: " + test);
-
-
-
-
-
-
+            const currentComment = await getValue(commentId)
+            const text = $(this).parent().prev('.text-justify').text().trim()
 
             //if changed comment is empty
-            if ($(this).parent().prev('.text-justify').text().length === 0) {
-                console.log(text + " 1");
-                $(this).parent().prev('.text-justify').text() == text;
-                //red background
-            }
-            else {
-                //console.log(text + " 3");
+            if (!text) {
+                $(this).parent().prev('.text-justify').text() == currentComment;
+            } else if (currentComment !== text) {
                 //$('#comment').removeAttr('contenteditable');
                 //$(this).parent().prev('.text-justify').removeAttr('contenteditable');
                 $(this).parent().prev('.text-justify').prop('contenteditable', false);
                 $(this).text('Edit');
-                console.log("test2: " + test);
             }
             //TODO:
             //code to save the only content // patch on controller
