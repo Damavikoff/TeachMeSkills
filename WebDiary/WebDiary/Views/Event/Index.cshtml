@@ -18,6 +18,11 @@
                     center: 'title', // 'addEventButton',
                     right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
                 },
+                footerToolbar: {
+                    start: 'AllEventsButton MyEventsButton GroupEventsButton ActiveEventsButton',
+                    center: '',
+                    end: 'prev,next'
+                },
                 navLinks: true, 
                 editable: true,
                 selectable: true,
@@ -29,6 +34,33 @@
                     hour: '2-digit',
                     minute: '2-digit',
                     meridiem: true //am pm
+                },
+                customButtons: {
+                    AllEventsButton: {
+                        text: 'All events',
+                        click: function (info) {
+                            //without filters
+                            info.event.setProp('display', 'none');
+                        }
+                    },
+                    MyEventsButton: {
+                        text: 'My events',
+                        click: function () {
+                            //where group id == null
+                        }
+                    },
+                    GroupEventsButton: {
+                        text: 'Group events',
+                        click: function () {
+                            //where group id != null
+                        }
+                    },
+                    ActiveEventsButton: {
+                        text: 'Active events',
+                        click: function () {
+                            //without 'isdone'
+                        }
+                    }
                 },
 
                 //TODO: function(){} if null, then load message "no events" and 'events: []'. Events function already async
@@ -254,7 +286,6 @@
                 url: "/Event/CreateEvent",
                 data: JSON.stringify(eventdto),
                 type: "POST",
-                //async: false, //запрос делается асинхронно и когда приходит ответ на запрос - сама функция уже закончила свое выполнение
                 contentType: "application/json;charset=utf-8",
                 dataType: "json",
                 success: function (result) {
@@ -287,7 +318,7 @@
                     type: "POST",
                     contentType: "application/json;charset=utf-8",
                     dataType: "json",
-                    success: function (result) { //why it is not working from the first time? if i waiting for success
+                    success: function (result) { 
                         $('#schedule').modal('hide');
                         alert(result);
                         someCalendar.refetchEvents();
@@ -325,7 +356,6 @@
                 contentType: "application/json;charset=utf-8",
                 dataType: "json",
                 success: function (result) {
-                    $('#schedule').modal('hide');
                     alert(result);
                     someCalendar.refetchEvents();
                 },
@@ -336,7 +366,6 @@
         }
     </script>
 }
-
 <div id='calendar'></div>
 
 <div class="modal fade" id="schedule">

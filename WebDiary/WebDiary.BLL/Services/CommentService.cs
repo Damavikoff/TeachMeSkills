@@ -76,7 +76,10 @@ namespace WebDiary.BLL.Services
         /// </param>
         public async Task<ServiceDataResponse<List<CommentDTO>>> GetCommentsAsync(Guid eventId, string authUserId)
         {
-            var objs = await _webDiaryContext.Comments.Include(c => c.User).Where(e => e.EventId == eventId).OrderBy(d => d.CreatedDate).ToListAsync();
+            var objs = await _webDiaryContext.Comments.Include(c => c.User)
+                                                      .Where(e => e.EventId == eventId)
+                                                      .OrderBy(d => d.CreatedAt)
+                                                      .ToListAsync();
 
             if (objs == null)
                 return ServiceDataResponse<List<CommentDTO>>.Fail("There are no comments!");
@@ -89,18 +92,25 @@ namespace WebDiary.BLL.Services
         /// <summary>
         /// Update existing comment 
         /// </summary>
-        public async Task<ServiceResponse> UpdateCommentAsync(CommentDTO commentModel, string authUserId)
+        public async Task<ServiceResponse> UpdateCommentAsync(CommentDTO commentModel, string authUserId) //return SDataResponse?
         {
-            if (commentModel.UserId != authUserId)
+            var obj = await _webDiaryContext.Comments.AsNoTracking()
+                                                     .FirstOrDefaultAsync(p => p.Id == commentModel.Id);
+
+            if (obj.UserId != authUserId)
             {
                 return ServiceResponse.Fail("You can not update this comment!");
             }
 
             try
             {
-                var obj = _mapper.Map<Comment>(commentModel);
-                _webDiaryContext.Comments.Update(obj);
-                await _webDiaryContext.SaveChangesAsync();
+                obj.EditedAt = DateTime.Now;
+                obj.Content = commentModel.Content;
+
+                await _webDiaryContext.Comments.Where(u => u.Id == obj.Id)
+                                        .ExecuteUpdateAsync(b => b
+                                        .SetProperty(u => u.Content, obj.Content)
+                                        .SetProperty(u => u.EditedAt, obj.EditedAt));
 
                 return ServiceResponse.Success("Comment successfully updated!");
             }

@@ -10,21 +10,25 @@
             <div class="d-flex flex-row align-items-center">
                 <input type="hidden" class="commentId" value="@Model.Id">
                 <input type="hidden" class="eventId" value="@Model.EventId">
-                @*   <span class="mr-2">@commentViewModel.User.UserName</span> *@
-                <small class="c-badge"><b>Nickname</b></small>
+                <small class="c-badge"><b>@User.FindFirstValue(ClaimTypes.Email)</b>
+                    @if (Model.EditedAt != null)
+                    {
+                        <small class="c-badge"><i>Edited at @Model.EditedAt.Value.ToString("HH:mm MM/dd/yyyy")</i></small>
+                    }
+                </small>
             </div>
-            <small>@Model.CreatedDate.Value.ToString("HH:mm MM/dd/yyyy")</small>
+            <small>@Model.CreatedAt.Value.ToString("HH:mm MM/dd/yyyy")</small>
         </div>
         <p class="text-justify comment-text mb-0">@Model.Content</p>
         <div class="d-flex flex-row user-feed">
             @if (Model.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
             {
-                <span class="ml-1"><i>Edit</i></span>
-                <span class="commentDelete"><i>Delete</i></span>
+                <span class="commentEdit"><small class="c-badge"><i>Edit</i></small></span>
+                <span class="commentDelete"><small class="c-badge"><i>Delete</i></small></span>
             }
             else
             {
-                <span class="ml-1"><i>Reply</i></span>
+                <span class="commentReply"><small class="c-badge"><i>Reply</i></small></span>
             }
         </div>
     </div>
@@ -67,3 +71,168 @@
         });
     });
 </script>
+<script>
+    /**
+    * Check if a database exists
+    * param {string} name Database name
+    * param {function} callback Function to return the response
+    * returns {bool} True if the database exists
+    */
+    var db;
+    function databaseExists(name, callback) { //if db not exist
+        var dbExists = true;
+        var request = window.indexedDB.open(name);
+        request.onupgradeneeded = function (e) {
+            if (request.result.version === 1) {
+                dbExists = false;
+                db = e.target.result;
+                var objectstore = db.createObjectStore("comments", {
+                    autoIncrement: false,
+                });
+                objectstore.createIndex("comment", "comment", { unique: false });
+                //db.close();
+
+                if (callback) callback(objectstore);
+            }
+        };
+    }
+
+    function addNewRecord(data, name) {
+        var request = window.indexedDB.open(name);
+        request.onsuccess = function (e) {
+            db = e.target.result;
+            const transaction = db.transaction(["comments"], "readwrite");
+            const objectStore = transaction.objectStore("comments");
+            objectStore.add(data.comment, data.ID);
+            //db.close();
+        };
+    }
+
+    function getComment(key, name) {
+        var request = window.indexedDB.open(name);
+
+        return new Promise((resolve, reject) => {
+            request.onsuccess = function (e) {
+                db = e.target.result;
+                const transaction = db.transaction(["comments"], "readwrite");
+                transaction.oncomplete = (event) => {
+                    console.log("Transaction completed");
+                };
+                transaction.onerror = (event) => {
+                    console.log("Transaction not opened due to error: " + transaction.error);
+                };
+
+                const objectStore = transaction.objectStore("comments");
+                const objectStoreRequest = objectStore.get(key);
+                objectStoreRequest.onerror = (event) => {
+                    console.log("Request not successful");
+                };
+                objectStoreRequest.onsuccess = (event) => {
+                    console.log("Request successful")
+                    resolve(objectStoreRequest.result);
+                };
+            }
+        })
+    }
+
+    function clearDb(name) {
+        var request = window.indexedDB.open(name);
+
+        return new Promise((resolve, reject) => {
+            request.onsuccess = function (e) {
+                db = e.target.result;
+                const transaction = db.transaction(["comments"], "readwrite");
+                transaction.oncomplete = (event) => {
+                    console.log("Transaction completed");
+                };
+                transaction.onerror = (event) => {
+                    console.log("Transaction not opened due to error: " + transaction.error);
+                };
+
+                const objectStore = transaction.objectStore("comments");
+                const objectStoreRequest = objectStore.clear();
+                objectStoreRequest.onerror = (event) => {
+                    console.log("Request not successful");
+                };
+                objectStoreRequest.onsuccess = (event) => {
+                    console.log("Request successful");
+                    resolve(objectStoreRequest.result);
+                };
+            }
+        })
+    }
+
+    $('.commentEdit').click(async function (event) {
+        event.preventDefault();
+
+        var name = "CommentsDB";
+        databaseExists(name, function (db) { 
+        });
+
+        var commentId = $(this)
+            .closest('.w-100')
+            .children('.align-items-center')
+            .children('.align-items-center')
+            .find('.commentId').val();
+
+        const text = $(this).parent().prev('.text-justify').text().trim();
+
+        //from EDIT to SAVE
+        if ($(this).text() == 'Edit') {
+            await clearDb(name);
+
+            $(this).parent().prev('.text-justify').prop('contenteditable', true);
+            $(this).parent().prev('.text-justify').focus();
+            $(this).text('Save');
+
+            $(".w-100").each((index, element) => {
+                var data = {
+                    ID: $(element).find(".align-items-center .commentId").val(),
+                    comment: $(element).children("p").text()
+                };
+                addNewRecord(data, name);
+            });
+        }
+
+        //from SAVE to EDIT
+        else {
+            const currentCommentText = await getComment(commentId, name);
+
+            //if changed comment is empty
+            if (!text) {
+                $(this).parent().prev('.text-justify').text(currentCommentText);
+                $(this).parent().prev('.text-justify').prop('contenteditable', false);
+                $(this).text('Edit');
+            }
+            else if (currentCommentText !== text) {
+                //$(this).parent().prev('.text-justify').removeAttr('contenteditable');
+                $(this).parent().prev('.text-justify').prop('contenteditable', false);
+                $(this).text('Edit');
+
+                var content = {
+                    ID: commentId,
+                    content: $(this).parent().prev('.text-justify').text()
+                }
+
+                $.ajax({
+                    url: "/Comment/UpdateComment",
+                    data: JSON.stringify(content),
+                    type: "PATCH",
+                    contentType: "application/json;charset=utf-8",
+                    dataType: "html",
+                    success: function (data) {
+                        //do nothing?
+                    },
+                    error: function (errormessage) {
+                        console.log(errormessage.responseText);
+                    }
+                });
+            }
+            //if changed comment is same
+            else {
+                $(this).parent().prev('.text-justify').prop('contenteditable', false);
+                $(this).text('Edit');
+            }
+        }
+    });
+</script> 

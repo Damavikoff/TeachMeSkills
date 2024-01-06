@@ -11,19 +11,16 @@ namespace WebDiary.Models
         ErrorMessage = "Wrong USERID value")]
         public string? UserId { get; set; }
         public string? Email { get; set; }
-        //[Required]
-        //public UserViewModel? User { get; set; }
 
         [Required]
         public Guid EventId { get; set; }
-
-        //[Required]
-        //public EventViewModel? Event { get; set; }
 
         [Required]
         public string? Content { get; set; }
 
         [Required]
-        public DateTime? CreatedDate { get; set; } = DateTime.Now;
+        public DateTime? CreatedAt { get; set; } = DateTime.Now;
+        public DateTime? EditedAt { get; set; } 
+        public Guid? ParentCommentId { get; set; }
     }
 }

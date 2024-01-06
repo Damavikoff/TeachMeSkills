@@ -20,9 +20,10 @@ public partial class Event
     public string? Url { get; set; }
 
     public string? BackgroundColor { get; set; }
+    public string? LastBackgroundColor { get; set; }
 
     [Required]
-    public string UserId { get; set; }
+    public string? UserId { get; set; }
 
     [Required]
     public User? User { get; set; }
@@ -31,4 +32,7 @@ public partial class Event
 
     [Required]
     public ICollection<Comment>? Comments { get; set; }
+
+    [Required]
+    public bool? IsDone { get; set; } = false;
 }

@@ -44,7 +44,7 @@ namespace WebDiary.Controllers
             var result = await _commentService.CreateCommentAsync(objDTO);
 
             var commentsViewModels = _mapper.Map<CommentViewModel>(result.Data);
-            //if comment null...
+            
             if (commentsViewModels != null)
                 return PartialView("ReturnedCommentPartial", commentsViewModels);
 
@@ -62,11 +62,10 @@ namespace WebDiary.Controllers
 
             var commentsViewModels = _mapper.Map<List<CommentViewModel>>(loadComments.Data);
 
-            return PartialView("ShowEventCommentsPartial", commentsViewModels); //ShowEventCommentsPartial
+            return PartialView("ShowEventCommentsPartial", commentsViewModels);
         }
 
-
-        [HttpPost]
+        [HttpPatch]
         public async Task<IActionResult> UpdateComment([FromBody] CommentViewModel comment) //[FromBody] Guid Id
         {
             var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -79,7 +78,7 @@ namespace WebDiary.Controllers
 
             //return PartialView("ShowEventCommentsPartial", commentsViewModels); //ShowEventCommentsPartial
 
-            return Ok();
+            return Ok(result.Message);
         }
     }
 }

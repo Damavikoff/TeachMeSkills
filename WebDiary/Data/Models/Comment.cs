@@ -22,6 +22,9 @@ namespace WebDiary.DAL.Models
         public string? Content { get; set; }
 
         [Required]
-        public DateTime? CreatedDate { get; set; } = default(DateTime?);
+        public DateTime? CreatedAt { get; set; } = default(DateTime?);
+        public DateTime? EditedAt { get; set; } = default(DateTime?);
+        public Guid? ParentCommentId { get; set; }
+        public Comment? ParentComment { get; set; }
     }
 }

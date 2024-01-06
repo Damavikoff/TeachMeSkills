@@ -12,7 +12,6 @@ public class EventViewModel
 
     [Required]
     [StringLength(50)]
-    //min value not need because Required not pass "" and null
     public string Title { get; set; } = null!;
 
     [Required]
@@ -34,7 +33,6 @@ public class EventViewModel
     [Required]
     public bool AllDay { get; set; }
 
-    //[Url] annotation worked at empty field
     [RegularExpression("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)", 
         ErrorMessage = "Wrong URL value")]
     public string? Url { get; set; }
@@ -44,6 +42,10 @@ public class EventViewModel
         ErrorMessage = "Wrong PRIORITY value")]
     public string? BackgroundColor { get; set; }
 
+    [RegularExpression("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+        ErrorMessage = "Wrong LAST PRIORITY value")]
+    public string? LastBackgroundColor { get; set; }
+
     [Required]
     [RegularExpression("^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$",
         ErrorMessage = "Wrong USERID value")]
@@ -51,4 +53,5 @@ public class EventViewModel
 
     public Guid? GroupId { get; set; } = null!;// nullable for adding null events
     //public GroupViewModel? Group { get; set; } = null!;
+    public bool? IsDone { get; set; } = false;
 }

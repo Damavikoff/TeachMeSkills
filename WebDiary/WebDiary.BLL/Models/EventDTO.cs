@@ -9,8 +9,9 @@ public class EventDTO
     public bool AllDay { get; set; }
     public string? Url { get; set; }
     public string? BackgroundColor { get; set; }
+    public string? LastBackgroundColor { get; set; }
     public string UserId { get; set; }
     public Guid? GroupId { get; set; }
     public GroupDTO? Group { get; set; } = null!;
-
+    public bool? IsDone { get; set; } = false;
 }

@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Diagnostics;
 using System.Security.Claims;
 using WebDiary.BLL.Models;
 using WebDiary.BLL.Services.Interfaces;
-using WebDiary.DAL.Models;
 using WebDiary.Models;
 using WebDiary.Services.FilterAttributes;
 
@@ -23,7 +21,7 @@ namespace WebDiary.Controllers
         {
             _eventService = eventService ?? throw new ArgumentNullException(nameof(eventService));
             _groupService = groupService ?? throw new ArgumentNullException(nameof(groupService));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(eventService));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
         public IActionResult Index()
         {
@@ -108,7 +106,5 @@ namespace WebDiary.Controllers
             var objsViewModels = _mapper.Map<List<GroupViewModel>>(result.Data);
             return PartialView(objsViewModels);
         }
-
-        
     }
 }
