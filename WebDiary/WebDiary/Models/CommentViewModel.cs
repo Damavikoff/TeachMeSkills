@@ -20,7 +20,8 @@ namespace WebDiary.Models
 
         [Required]
         public DateTime? CreatedAt { get; set; } = DateTime.Now;
-        public DateTime? EditedAt { get; set; } 
-        public Guid? ParentCommentId { get; set; }
+        public DateTime? EditedAt { get; set; }
+        public Guid? ParentCommentId { get; set; } = null!;
+        public string? ParentCommentEmail { get; set; } = null!;
     }
 }

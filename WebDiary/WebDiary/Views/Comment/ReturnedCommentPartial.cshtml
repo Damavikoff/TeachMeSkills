@@ -11,9 +11,9 @@
                 <input type="hidden" class="commentId" value="@Model.Id">
                 <input type="hidden" class="eventId" value="@Model.EventId">
                 <small class="c-badge"><b>@User.FindFirstValue(ClaimTypes.Email)</b>
-                    @if (Model.EditedAt != null)
+                    @if (Model.ParentCommentId != null)
                     {
-                        <small class="c-badge"><i>Edited at @Model.EditedAt.Value.ToString("HH:mm MM/dd/yyyy")</i></small>
+                        <small class="c-badge"><i>reply to @Model.ParentCommentEmail</i></small>
                     }
                 </small>
             </div>
@@ -23,19 +23,120 @@
         <div class="d-flex flex-row user-feed">
             @if (Model.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
             {
-                <span class="commentEdit"><small class="c-badge"><i>Edit</i></small></span>
-                <span class="commentDelete"><small class="c-badge"><i>Delete</i></small></span>
+                <span class="commentEdit"><a href="#"><small class="c-badge"><i>Edit</i></small></a></span>
+                <span class="commentDelete"><a href="#"><small class="c-badge"><i>Delete</i></small></a></span>
             }
             else
             {
-                <span class="commentReply"><small class="c-badge"><i>Reply</i></small></span>
+                <span class="commentReply"><a href="#"><small class="c-badge"><i>Reply</i></small></a></span> @*<a href=""> is not work*@
             }
         </div>
     </div>
 </div>
 
 <script>
-    $('.commentDelete').click(function (event) { 
+    
+</script>
+<script>
+    var db;
+    function databaseExists(name, callback) { //if db not exist
+        var dbExists = true;
+        var request = window.indexedDB.open(name);
+        request.onupgradeneeded = function (e) {
+            if (request.result.version === 1) {
+                dbExists = false;
+                db = e.target.result;
+
+                var objectstore = db.createObjectStore("comments", {
+                    autoIncrement: false,
+                });
+                objectstore.createIndex("comment", "comment", { unique: false });
+
+                db.close();
+
+                if (callback) callback(objectstore);
+            }
+        };
+    }
+
+    function addNewRecord(data, name) {
+        var request = window.indexedDB.open(name);
+        request.onsuccess = function (e) {
+            db = e.target.result;
+
+            const transaction = db.transaction(["comments"], "readwrite");
+            const objectStore = transaction.objectStore("comments");
+            objectStore.add(data.comment, data.ID);
+
+            db.close();
+        };
+    }
+
+    function getComment(key, name) {
+        var request = window.indexedDB.open(name);
+
+        return new Promise((resolve, reject) => {
+            request.onsuccess = function (e) {
+                db = e.target.result;
+
+                const transaction = db.transaction(["comments"], "readwrite");
+
+                transaction.oncomplete = (event) => {
+                    console.log("Transaction completed");
+                };
+                transaction.onerror = (event) => {
+                    console.log("Transaction not opened due to error: " + transaction.error);
+                };
+
+                const objectStore = transaction.objectStore("comments");
+                const objectStoreRequest = objectStore.get(key);
+
+                objectStoreRequest.onerror = (event) => {
+                    console.log("Request not successful");
+                };
+                objectStoreRequest.onsuccess = (event) => {
+                    console.log("Request successful")
+                    resolve(objectStoreRequest.result);
+                };
+
+                db.close();
+            }
+        })
+    }
+
+    function clearDb(name) {
+        var request = window.indexedDB.open(name);
+
+        return new Promise((resolve, reject) => {
+            request.onsuccess = function (e) {
+                db = e.target.result;
+
+                const transaction = db.transaction(["comments"], "readwrite");
+
+                transaction.oncomplete = (event) => {
+                    console.log("Transaction completed");
+                };
+                transaction.onerror = (event) => {
+                    console.log("Transaction not opened due to error: " + transaction.error);
+                };
+
+                const objectStore = transaction.objectStore("comments");
+                const objectStoreRequest = objectStore.clear();
+
+                objectStoreRequest.onerror = (event) => {
+                    console.log("Request not successful");
+                };
+                objectStoreRequest.onsuccess = (event) => {
+                    console.log("Request successful");
+                    resolve(objectStoreRequest.result);
+                };
+
+                db.close();
+            }
+        })
+    }
+
+    $('.commentDelete').click(function (event) {
         event.preventDefault();
 
         var commentId = $(this)
@@ -70,97 +171,6 @@
             }
         });
     });
-</script>
-<script>
-    /**
-    * Check if a database exists
-    * param {string} name Database name
-    * param {function} callback Function to return the response
-    * returns {bool} True if the database exists
-    */
-    var db;
-    function databaseExists(name, callback) { //if db not exist
-        var dbExists = true;
-        var request = window.indexedDB.open(name);
-        request.onupgradeneeded = function (e) {
-            if (request.result.version === 1) {
-                dbExists = false;
-                db = e.target.result;
-                var objectstore = db.createObjectStore("comments", {
-                    autoIncrement: false,
-                });
-                objectstore.createIndex("comment", "comment", { unique: false });
-                //db.close();
-
-                if (callback) callback(objectstore);
-            }
-        };
-    }
-
-    function addNewRecord(data, name) {
-        var request = window.indexedDB.open(name);
-        request.onsuccess = function (e) {
-            db = e.target.result;
-            const transaction = db.transaction(["comments"], "readwrite");
-            const objectStore = transaction.objectStore("comments");
-            objectStore.add(data.comment, data.ID);
-            //db.close();
-        };
-    }
-
-    function getComment(key, name) {
-        var request = window.indexedDB.open(name);
-
-        return new Promise((resolve, reject) => {
-            request.onsuccess = function (e) {
-                db = e.target.result;
-                const transaction = db.transaction(["comments"], "readwrite");
-                transaction.oncomplete = (event) => {
-                    console.log("Transaction completed");
-                };
-                transaction.onerror = (event) => {
-                    console.log("Transaction not opened due to error: " + transaction.error);
-                };
-
-                const objectStore = transaction.objectStore("comments");
-                const objectStoreRequest = objectStore.get(key);
-                objectStoreRequest.onerror = (event) => {
-                    console.log("Request not successful");
-                };
-                objectStoreRequest.onsuccess = (event) => {
-                    console.log("Request successful")
-                    resolve(objectStoreRequest.result);
-                };
-            }
-        })
-    }
-
-    function clearDb(name) {
-        var request = window.indexedDB.open(name);
-
-        return new Promise((resolve, reject) => {
-            request.onsuccess = function (e) {
-                db = e.target.result;
-                const transaction = db.transaction(["comments"], "readwrite");
-                transaction.oncomplete = (event) => {
-                    console.log("Transaction completed");
-                };
-                transaction.onerror = (event) => {
-                    console.log("Transaction not opened due to error: " + transaction.error);
-                };
-
-                const objectStore = transaction.objectStore("comments");
-                const objectStoreRequest = objectStore.clear();
-                objectStoreRequest.onerror = (event) => {
-                    console.log("Request not successful");
-                };
-                objectStoreRequest.onsuccess = (event) => {
-                    console.log("Request successful");
-                    resolve(objectStoreRequest.result);
-                };
-            }
-        })
-    }
 
     $('.commentEdit').click(async function (event) {
         event.preventDefault();
@@ -183,7 +193,7 @@
 
             $(this).parent().prev('.text-justify').prop('contenteditable', true);
             $(this).parent().prev('.text-justify').focus();
-            $(this).text('Save');
+            $(this).find('i').text("Save");
 
             $(".w-100").each((index, element) => {
                 var data = {
@@ -202,12 +212,12 @@
             if (!text) {
                 $(this).parent().prev('.text-justify').text(currentCommentText);
                 $(this).parent().prev('.text-justify').prop('contenteditable', false);
-                $(this).text('Edit');
+                $(this).find('i').text("Edit");
             }
             else if (currentCommentText !== text) {
                 //$(this).parent().prev('.text-justify').removeAttr('contenteditable');
                 $(this).parent().prev('.text-justify').prop('contenteditable', false);
-                $(this).text('Edit');
+                $(this).find('i').text("Edit");
 
                 var content = {
                     ID: commentId,
@@ -231,7 +241,7 @@
             //if changed comment is same
             else {
                 $(this).parent().prev('.text-justify').prop('contenteditable', false);
-                $(this).text('Edit');
+                $(this).find('i').text("Edit");
             }
         }
     });

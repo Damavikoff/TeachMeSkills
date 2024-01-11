@@ -57,13 +57,13 @@ public partial class WebDiaryContext : IdentityDbContext<User>
         modelBuilder.Entity<Group>()
         .HasMany(e => e.Events)
         .WithOne(e => e.Group)
-        .HasForeignKey(e => e.GroupId);
+        .HasForeignKey(e => e.GroupIdentificator);
         //.IsRequired();
 
         modelBuilder.Entity<Comment>()
         .HasOne(p => p.Event).WithMany(b => b.Comments)
         .HasForeignKey(p => p.EventId)
-        .OnDelete(DeleteBehavior.Cascade); //!
+        .OnDelete(deleteBehavior: DeleteBehavior.ClientCascade); //!
 
         base.OnModelCreating(modelBuilder);
         OnModelCreatingPartial(modelBuilder);

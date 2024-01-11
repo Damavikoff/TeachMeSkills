@@ -13,11 +13,13 @@ namespace WebDiary.Services
             CreateMap<GroupDTO, GroupViewModel>();
 
             CreateMap<EventViewModel, EventDTO>();
-            CreateMap<EventDTO, EventViewModel>();
+            CreateMap<EventDTO, EventViewModel>()
+                .ForMember(d => d.DonedByEmail, o => o.MapFrom(s => s.DonedBy.Email));
 
             CreateMap<CommentViewModel, CommentDTO>();
             CreateMap<CommentDTO, CommentViewModel>()
-                .ForMember(d => d.Email, o => o.MapFrom(s => s.User.Email));
+                .ForMember(d => d.Email, o => o.MapFrom(s => s.User.Email))
+                .ForMember(d => d.ParentCommentEmail, o => o.MapFrom(s => s.ParentComment.User.Email));
         }
     }
 }

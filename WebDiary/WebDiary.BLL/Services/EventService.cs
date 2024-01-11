@@ -55,7 +55,7 @@ namespace WebDiary.BLL.Services
             }
 
             //select all events of user group
-            var groupEvents = await _webDiaryContext.Events.Where(u => groupGuids.Contains(u.GroupId)).Where(d => d.Start >= start && d.End <= end).ToListAsync();
+            var groupEvents = await _webDiaryContext.Events.Where(u => groupGuids.Contains(u.GroupIdentificator)).Where(d => d.Start >= start && d.End <= end).ToListAsync();
 
             if (groupEvents.Count == 0)
             {
@@ -83,7 +83,8 @@ namespace WebDiary.BLL.Services
         {
             //check if can user see this event
 
-            var obj = await _webDiaryContext.Events.Include(p=>p.Group)
+            var obj = await _webDiaryContext.Events.Include(p => p.Group)
+                                                   .Include(p => p.User)
                                                    .FirstOrDefaultAsync(p => p.Id == eventId);
 
             //if (obj.UserId != authUserId)
@@ -115,7 +116,7 @@ namespace WebDiary.BLL.Services
 
                 return ServiceResponse.Success("Event successfully created!");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return ServiceResponse.Fail(ex.Message);
             }
@@ -126,15 +127,53 @@ namespace WebDiary.BLL.Services
         /// </summary>
         public async Task<ServiceResponse> UpdateEventAsync(EventDTO eventModel, string authUserId)
         {
-            if (eventModel.UserId != authUserId) 
+            var obj = await _webDiaryContext.Events.AsNoTracking()
+                                                    .FirstOrDefaultAsync(p => p.Id == eventModel.Id);
+
+            if (obj.UserId != authUserId)
             {
                 return ServiceResponse.Fail("You can not update this event!");
             }
 
             try
             {
-                var obj = _mapper.Map<Event>(eventModel);
-                _webDiaryContext.Events.Update(obj);
+                if (obj.IsDone != eventModel.IsDone)
+                {
+                    switch (eventModel.IsDone)
+                    {
+                        case true: //if IsDone checked
+                            //BC -> LastBC
+                            eventModel.LastBackgroundColor = eventModel.BackgroundColor;
+                            //BC == grey
+                            eventModel.BackgroundColor = "#505149";
+                            //IsDone == 1
+                            //DonedAt == DateTime.Now
+                            eventModel.DonedAt = DateTime.Now;
+                            //DonedBy == Auth.User
+                            eventModel.DonedById = authUserId;
+                            break;
+
+                        case false: //if IsDone unchecked
+                            //LastBC -> BC
+                            eventModel.BackgroundColor = obj.LastBackgroundColor;
+                            //LastBC == null
+                            eventModel.LastBackgroundColor = null;
+                            //IsDone == 0
+                            //DonedAt == null
+                            eventModel.DonedAt = null;
+                            //DonedBy == null
+                            eventModel.DonedById = null;
+                            break;
+                    }
+                }
+                else
+                {
+                    eventModel.LastBackgroundColor = obj.LastBackgroundColor;
+                }
+
+                var objToBd = _mapper.Map<Event>(eventModel);
+                //patch update?
+                _webDiaryContext.Events.Update(objToBd);
                 await _webDiaryContext.SaveChangesAsync();
 
                 return ServiceResponse.Success("Event successfully updated!");

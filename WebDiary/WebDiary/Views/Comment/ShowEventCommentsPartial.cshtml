@@ -8,24 +8,20 @@
             <div class="col-md-30">
                 <div class="card">
                     <div class="mt-2">
-                        @* @if (Model.Count != 0)
-                        { *@
                         @foreach (CommentViewModel commentViewModel in Model)
                         {
                             <div class="d-flex flex-row p-3">
                                 @* <img src="https://i.imgur.com/zQZSWrt.jpg" width="40" height="40" class="rounded-circle mr-3">*@
                                 <div class="w-100">
-                                    <input type="hidden" class="commentId" value="@commentViewModel.Id">
                                     <div class="d-flex justify-content-between align-items-center">
-
                                         <div class="d-flex flex-row align-items-center">
                                             <input type="hidden" class="commentId" value="@commentViewModel.Id">
                                             <input type="hidden" class="eventId" value="@commentViewModel.EventId">
                                             <small class="c-badge">
                                                 <b>@commentViewModel.Email</b>
-                                                @if (commentViewModel.EditedAt != null)
+                                                @if (commentViewModel.ParentCommentId != null)
                                                 {
-                                                    <small class="c-badge"><i>Edited at @commentViewModel.EditedAt.Value.ToString("HH:mm MM/dd/yyyy")</i></small>
+                                                    <small class="c-badge" onclick="showReply('@commentViewModel.ParentCommentId')"><i>reply to @commentViewModel.ParentCommentEmail</i></small>
                                                 }
                                             </small>
                                         </div>
@@ -35,18 +31,22 @@
                                     <div class="d-flex flex-row user-feed">
                                         @if (commentViewModel.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
                                         {
-                                            <span class="commentEdit"><small class="c-badge"><i>Edit</i></small></span>
-                                            <span class="commentDelete"><small class="c-badge"><i>Delete</i></small></span>
+                                            <span class="commentEdit"><a href="#"><small class="c-badge"><i>Edit</i></small></a></span>
+                                            <span class="commentDelete"><a href="#"><small class="c-badge"><i>Delete</i></small></a></span>
                                         }
                                         else
                                         {
-                                            <span class="commentReply"><small class="c-badge"><i>Reply</i></small></span>
+                                            <span class="commentReply"><a href="#"><small class="c-badge"><i>Reply</i></small></a></span> @*<a href=""> is not work*@
+                                        }
+
+                                        @if (commentViewModel.EditedAt != null)
+                                        {
+                                            <span><small class="c-badge"><i>Edited at @commentViewModel.EditedAt.Value.ToString("HH:mm MM/dd/yyyy")</i></small></span>
                                         }
                                     </div>
                                 </div>
                             </div>
                         }
-                        @* } *@
                     </div>
                 </div>
             </div>
@@ -55,6 +55,108 @@
 </div>
 
 <script>
+    var db;
+    function databaseExists(name, callback) {
+        var request = window.indexedDB.open(name);
+        request.onupgradeneeded = function (e) {
+            //The upgradeneeded event is fired when an attempt was made to open a database with a version number higher than its current version.
+            if (request.result.version === 1) {
+                db = e.target.result;
+
+                //You can't create an objectStore in an onsuccess method. You can only do this in a upgradeneeded event.
+                var objectstore = db.createObjectStore("comments", {
+                    autoIncrement: false,
+                });
+                objectstore.createIndex("comment", "comment", { unique: false });
+
+                db.close();
+
+                if (callback) callback(objectstore);
+            }
+        };
+        //https://stackoverflow.com/questions/52137882/indexeddb-add-record-to-objectstore-only-works-once
+    }
+    function addNewRecord(data, name) {
+        var request = window.indexedDB.open(name);
+        request.onsuccess = function (e) {
+            db = e.target.result;
+
+            const transaction = db.transaction(["comments"], "readwrite");
+            const objectStore = transaction.objectStore("comments");
+            objectStore.add(data.comment, data.ID);
+
+            db.close();
+        };
+    }
+
+    function getComment(key, name) {
+        var request = window.indexedDB.open(name);
+
+        return new Promise((resolve, reject) => {
+            request.onsuccess = function (e) {
+                db = e.target.result;
+
+                const transaction = db.transaction(["comments"], "readwrite");
+
+                transaction.oncomplete = (event) => {
+                    console.log("Transaction completed");
+                };
+                transaction.onerror = (event) => {
+                    //TODO: store errors in log file
+                    console.log("Transaction not opened due to error: " + transaction.error); 
+                };
+
+                const objectStore = transaction.objectStore("comments");
+                const objectStoreRequest = objectStore.get(key);
+
+                objectStoreRequest.onerror = (event) => {
+                    //TODO: store errors in log file
+                    console.log("Request not successful");
+                };
+                objectStoreRequest.onsuccess = (event) => {
+                    console.log("Request successful")
+                    resolve(objectStoreRequest.result);
+                };
+
+                db.close();
+            }
+        })
+    }
+
+    function clearDb(name) {
+        var request = window.indexedDB.open(name);
+
+        return new Promise((resolve, reject) => {
+            request.onsuccess = function (e) {
+                db = e.target.result;
+
+                const transaction = db.transaction(["comments"], "readwrite");
+
+                transaction.oncomplete = (event) => {
+                    console.log("Transaction completed");
+                };
+                transaction.onerror = (event) => {
+                    //TODO: store errors in log file
+                    console.log("Transaction not opened due to error: " + transaction.error);
+                };
+
+                const objectStore = transaction.objectStore("comments");
+                const objectStoreRequest = objectStore.clear();
+
+                objectStoreRequest.onerror = (event) => {
+                    //TODO: store errors in log file
+                    console.log("Request not successful");
+                };
+                objectStoreRequest.onsuccess = (event) => {
+                    console.log("Request successful");
+                    resolve(objectStoreRequest.result);
+                };
+
+                db.close();
+            }
+        })
+    }
+
     $('.commentDelete').click(function (event) {
         event.preventDefault();
 
@@ -90,107 +192,34 @@
             }
         });
     });
-</script>
 
-<script>
-    /**
-    * Check if a database exists
-    * param {string} name Database name
-    * param {function} callback Function to return the response
-    * returns {bool} True if the database exists
-    */
-    var db;
-    function databaseExists(name, callback) { //if db not exist
-        var dbExists = true;
-        var request = window.indexedDB.open(name);
-        request.onupgradeneeded = function (e) {
-            //The upgradeneeded event is fired when an attempt was made to open a database with a version number higher than its current version.
-            if (request.result.version === 1) {
-                dbExists = false;
-                //window.indexedDB.deleteDatabase(name);
-                db = e.target.result;
-                //You can't create an objectStore in an onsuccess method. You can only do this in a upgradeneeded event.
-                var objectstore = db.createObjectStore("comments", {
-                    autoIncrement: false,
-                });
-                objectstore.createIndex("comment", "comment", { unique: false });
-                //db.close();
+    $('.commentReply').click(async function (event) {
+        var commentId = $(this)
+                .closest('.w-100') // goes up in the tree until .w-100
+                .children('.align-items-center')
+                .children('.align-items-center')
+                .find('.commentId').val();
 
-                if (callback) callback(objectstore);
-                //если не существует, то создается и существует
-            }
-        };
-        //https://stackoverflow.com/questions/52137882/indexeddb-add-record-to-objectstore-only-works-once
-    }
-    function addNewRecord(data, name) {
-        var request = window.indexedDB.open(name);
-        request.onsuccess = function (e) {
-            db = e.target.result;
-            const transaction = db.transaction(["comments"], "readwrite");
-            const objectStore = transaction.objectStore("comments");
-            objectStore.add(data.comment, data.ID);
-            //db.close();
-        };
-    }
+        document.getElementById('ParentCommentId').value = commentId;
+        document.getElementById('Content').focus();
+    });
 
-    function getComment(key, name) {
-        var request = window.indexedDB.open(name);
-
-        return new Promise((resolve, reject) => {
-            request.onsuccess = function (e) {
-                db = e.target.result;
-                const transaction = db.transaction(["comments"], "readwrite");
-                transaction.oncomplete = (event) => {
-                    console.log("Transaction completed");
-                };
-                transaction.onerror = (event) => {
-                    //TODO: store errors in log file
-                    console.log("Transaction not opened due to error: " + transaction.error); 
-                };
-
-                const objectStore = transaction.objectStore("comments");
-                const objectStoreRequest = objectStore.get(key);
-                objectStoreRequest.onerror = (event) => {
-                    //TODO: store errors in log file
-                    console.log("Request not successful");
-                };
-                objectStoreRequest.onsuccess = (event) => {
-                    console.log("Request successful")
-                    resolve(objectStoreRequest.result);
-                };
+    showReply = (commentId) => {
+        $(".w-100").each((index, element) => {
+            if ($(element).find(".align-items-center .commentId").val() == commentId) {
+                element.scrollIntoView();
+                //$(element).goTo();
+                animate(element)
+                return false;
             }
         })
     }
 
-    function clearDb(name) {
-        var request = window.indexedDB.open(name);
-
-        return new Promise((resolve, reject) => {
-            request.onsuccess = function (e) {
-                db = e.target.result;
-                const transaction = db.transaction(["comments"], "readwrite");
-
-                transaction.oncomplete = (event) => {
-                    console.log("Transaction completed");
-                };
-                transaction.onerror = (event) => {
-                    //TODO: store errors in log file
-                    console.log("Transaction not opened due to error: " + transaction.error);
-                };
-
-                const objectStore = transaction.objectStore("comments");
-                const objectStoreRequest = objectStore.clear();
-
-                objectStoreRequest.onerror = (event) => {
-                    //TODO: store errors in log file
-                    console.log("Request not successful");
-                };
-                objectStoreRequest.onsuccess = (event) => {
-                    console.log("Request successful");
-                    resolve(objectStoreRequest.result);
-                };
-            }
-        })
+    animate = (elem) => {
+        elem.style.border = "1px solid grey"
+        setInterval(function () {
+            elem.style.border = null
+        }, 1000);
     }
 
     $('.commentEdit').click(async function (event) {
@@ -214,9 +243,12 @@
             await clearDb(name); 
 
             $(this).parent().prev('.text-justify').prop('contenteditable', true);
-            $(this).parent().prev('.text-justify').focus();
-            $(this).text('Save'); //FIX: this resetting tags <small> and <i>
+            //$(this).text("Save"); //FIX: this resetting tags <small> and <i>
+            //https://stackoverflow.com/questions/5637969/is-an-empty-href-valid
+            //$(this).wrapInner('<small class="c-badge"><i><a href="#"></a></i></small>');
+            $(this).find('i').text("Save"); 
             
+
             $(".w-100").each((index, element) => {
                 var data = {
                     ID: $(element).find(".align-items-center .commentId").val(),
@@ -234,13 +266,12 @@
             if (!text) {
                 $(this).parent().prev('.text-justify').text(currentCommentText);
                 $(this).parent().prev('.text-justify').prop('contenteditable', false);
-                $(this).text('Edit');
-
+                $(this).find('i').text("Edit");
             }
             else if (currentCommentText !== text) {
                 //$(this).parent().prev('.text-justify').removeAttr('contenteditable');
                 $(this).parent().prev('.text-justify').prop('contenteditable', false);
-                $(this).text('Edit');
+                $(this).find('i').text("Edit");
 
                 var content = {
                     ID: commentId, 
@@ -264,7 +295,7 @@
             //if changed comment is same
             else {
                 $(this).parent().prev('.text-justify').prop('contenteditable', false);
-                $(this).text('Edit');
+                $(this).find('i').text("Edit");
             }
         }
     });

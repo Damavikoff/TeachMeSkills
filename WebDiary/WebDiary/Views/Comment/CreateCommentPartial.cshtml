@@ -7,12 +7,15 @@
     <form id="form">
         <input type="text" class="form-control" placeholder="Enter your comment..." id="Content" required>
         <input type="hidden" class="form-control" id="EventId">
+        <input type="hidden" class="form-control" id="ParentCommentId">
         <button type="submit" id="commentSave">Send</button>
     </form>
 </div>
 
 <script>
     $('#commentSave').click(function (event) { //event
+        //send here from partial button Reply value "ParentCommentID". 
+
         if ($("#Content")[0].checkValidity()) {
             event.preventDefault();
 
@@ -22,6 +25,10 @@
                 eventId: $('#EventId').val()
             };
 
+            if ($('#ParentCommentId').val() !== "") {
+                commentdto.parentCommentId = $('#ParentCommentId').val()
+            };
+            
             $.ajax({
                 url: "/Comment/CreateComment",
                 data: JSON.stringify(commentdto),
@@ -31,6 +38,7 @@
                 success: function (data) {
                     $('.mt-2').append(data);
                     $('#Content').val("");
+                    $('#ParentCommentId').val(null);
                 },
                 error: function (errormessage) {
                     console.log(errormessage.responseText);

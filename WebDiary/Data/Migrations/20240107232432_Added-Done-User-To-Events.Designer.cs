@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebDiary.DAL.Models;
 
@@ -11,9 +12,11 @@ using WebDiary.DAL.Models;
 namespace WebDiary.DAL.Migrations
 {
     [DbContext(typeof(WebDiaryContext))]
-    partial class WebDiaryContextModelSnapshot : ModelSnapshot
+    [Migration("20240107232432_Added-Done-User-To-Events")]
+    partial class AddedDoneUserToEvents
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -241,7 +244,7 @@ namespace WebDiary.DAL.Migrations
                     b.Property<DateTime>("End")
                         .HasColumnType("datetime");
 
-                    b.Property<Guid?>("GroupIdentificator")
+                    b.Property<Guid?>("GroupId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<bool?>("IsDone")
@@ -272,7 +275,7 @@ namespace WebDiary.DAL.Migrations
 
                     b.HasIndex("DonedById");
 
-                    b.HasIndex("GroupIdentificator");
+                    b.HasIndex("GroupId");
 
                     b.HasIndex("UserId");
 
@@ -458,7 +461,7 @@ namespace WebDiary.DAL.Migrations
 
                     b.HasOne("WebDiary.DAL.Models.Group", "Group")
                         .WithMany("Events")
-                        .HasForeignKey("GroupIdentificator");
+                        .HasForeignKey("GroupId");
 
                     b.HasOne("WebDiary.DAL.Models.User", "User")
                         .WithMany("Events")

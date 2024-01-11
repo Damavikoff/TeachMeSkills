@@ -77,6 +77,7 @@ namespace WebDiary.BLL.Services
         public async Task<ServiceDataResponse<List<CommentDTO>>> GetCommentsAsync(Guid eventId, string authUserId)
         {
             var objs = await _webDiaryContext.Comments.Include(c => c.User)
+                                                      .Include(c => c.ParentComment)
                                                       .Where(e => e.EventId == eventId)
                                                       .OrderBy(d => d.CreatedAt)
                                                       .ToListAsync();

@@ -63,8 +63,10 @@ namespace WebDiary.Controllers
                 return Json(result.Message); //как-то поправить, мне не нравится что возвращает джсон а не что-то типа BadRequest
             }
 
-            var objViewModels = _mapper.Map<EventViewModel>(result.Data);
-            return Ok(objViewModels);
+            var objViewModel = _mapper.Map<EventViewModel>(result.Data);
+            return Ok(objViewModel);
+            //return View("Index",objViewModel);
+            //return Json(objViewModel);
         }
 
         [HttpPost]

@@ -7,7 +7,7 @@ namespace WebDiary.Models;
 public class EventViewModel
 {
     [Key]
-    [HiddenInput(DisplayValue = false)]
+    //[HiddenInput(DisplayValue = false)]
     public Guid Id { get; set; }
 
     [Required]
@@ -41,17 +41,17 @@ public class EventViewModel
     [RegularExpression("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$", 
         ErrorMessage = "Wrong PRIORITY value")]
     public string? BackgroundColor { get; set; }
-
-    [RegularExpression("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-        ErrorMessage = "Wrong LAST PRIORITY value")]
-    public string? LastBackgroundColor { get; set; }
+    //public string? LastBackgroundColor { get; set; }
 
     [Required]
     [RegularExpression("^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$",
         ErrorMessage = "Wrong USERID value")]
     public string UserId { get; set; }
 
-    public Guid? GroupId { get; set; } = null!;// nullable for adding null events
+    public string? GroupIdentificator { get; set; } = null!;// nullable for adding null events
     //public GroupViewModel? Group { get; set; } = null!;
     public bool? IsDone { get; set; } = false;
+    public DateTime? DonedAt { get; set; } = null!;
+    public string? DonedById { get; set; } = null!;
+    public string? DonedByEmail { get; set; } = null!;
 }

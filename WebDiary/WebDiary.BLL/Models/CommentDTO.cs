@@ -13,6 +13,6 @@ namespace WebDiary.BLL.Models
         public DateTime? CreatedAt { get; set; } = default(DateTime?);
         public DateTime? EditedAt { get; set; } = default(DateTime?);
         public Guid? ParentCommentId { get; set; }
-        public Comment? ParentComment { get; set; }
+        public CommentDTO? ParentComment { get; set; } // Comment
     }
 }

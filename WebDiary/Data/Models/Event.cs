@@ -27,7 +27,7 @@ public partial class Event
 
     [Required]
     public User? User { get; set; }
-    public Guid? GroupId { get; set; }
+    public Guid? GroupIdentificator { get; set; }
     public Group? Group { get; set; } = null!;
 
     [Required]
@@ -35,4 +35,8 @@ public partial class Event
 
     [Required]
     public bool? IsDone { get; set; } = false;
+
+    public DateTime? DonedAt { get; set; } = default(DateTime?);
+    public string? DonedById { get; set; }
+    public User? DonedBy { get; set; }
 }
