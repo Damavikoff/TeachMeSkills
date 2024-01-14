@@ -18,6 +18,29 @@ namespace WebDiary.BLL.Services
         }
 
         /// <summary>
+        /// Create a new group
+        /// </summary>
+        public async Task<ServiceResponse> CreateGroupAsync(GroupDTO groupModel, string authUserId)
+        {
+            if (authUserId == null)
+                return ServiceResponse.Fail("You are not authenticated!");
+
+            try
+            {
+                groupModel.Id = Guid.NewGuid();
+                var obj = _mapper.Map<Group>(groupModel);
+                _webDiaryContext.Groups.Add(obj);
+                await _webDiaryContext.SaveChangesAsync(); //request to DB is here => async
+
+                return ServiceResponse.Success("Group successfully created!");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResponse.Fail(ex.Message);
+            }
+        }
+
+        /// <summary>
         /// Loading all groups of an authenticated user, where he is a member
         /// </summary>
         /// <param name="id">
@@ -25,10 +48,10 @@ namespace WebDiary.BLL.Services
         /// </param>
         public async Task<ServiceDataResponse<List<GroupDTO>>> ShowUserGroups(string id)
         {
-            var userGroups = await _webDiaryContext.Users.Where(u => u.Id == id).SelectMany(g => g.Groups).ToListAsync();
+            var userGroups = await _webDiaryContext.Users.Where(u => u.Id == id).SelectMany(g => g.JoinedGroups).ToListAsync();
 
             if (userGroups.Count == 0)
-                return ServiceDataResponse<List<GroupDTO>>.Fail("There are no events!");
+                return ServiceDataResponse<List<GroupDTO>>.Fail("There are no groups!");
 
             var userGroupsDTO = _mapper.Map<List<GroupDTO>>(userGroups);
 

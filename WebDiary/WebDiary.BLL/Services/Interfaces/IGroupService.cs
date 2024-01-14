@@ -6,5 +6,6 @@ namespace WebDiary.BLL.Services.Interfaces
     public interface IGroupService
     {
         Task<ServiceDataResponse<List<GroupDTO>>> ShowUserGroups(string id);
+        Task<ServiceResponse> CreateGroupAsync(GroupDTO groupModel, string authUserId); 
     }
 }

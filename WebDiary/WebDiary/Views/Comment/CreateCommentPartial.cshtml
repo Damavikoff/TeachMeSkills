@@ -5,10 +5,16 @@
     @*mt-3 *@
     @*<img src="https://i.imgur.com/zQZSWrt.jpg" width="50" class="rounded-circle mr-2">*@
     <form id="form">
-        <input type="text" class="form-control" placeholder="Enter your comment..." id="Content" required>
+        
         <input type="hidden" class="form-control" id="EventId">
         <input type="hidden" class="form-control" id="ParentCommentId">
-        <button type="submit" id="commentSave">Send</button>
+        <table>
+            <tr>
+                <td><input type="text" class="form-control" placeholder="Enter your comment..." id="Content" required></td>
+                <td><button type="submit" class="form-control btn-success" id="commentSave">Send</button></td>
+            </tr>
+        </table>
+        
     </form>
 </div>
 

@@ -35,7 +35,7 @@ namespace WebDiary.BLL.Services
             var userEvents = await _webDiaryContext.Events.Where(u => u.UserId == authUserId).Where(d => d.Start >= start && d.End <= end).ToListAsync();
 
             //select groups of user
-            var userGroups = await _webDiaryContext.Users.Where(u => u.Id == authUserId).SelectMany(g => g.Groups).ToListAsync();
+            var userGroups = await _webDiaryContext.Users.Where(u => u.Id == authUserId).SelectMany(g => g.JoinedGroups).ToListAsync();
 
             if (userEvents.Count == 0 && userGroups.Count == 0)
                 return ServiceDataResponse<List<EventDTO>>.Fail("There are no events!"); //this is success operation but with empty response -- for webapi
@@ -130,10 +130,10 @@ namespace WebDiary.BLL.Services
             var obj = await _webDiaryContext.Events.AsNoTracking()
                                                     .FirstOrDefaultAsync(p => p.Id == eventModel.Id);
 
-            if (obj.UserId != authUserId)
-            {
-                return ServiceResponse.Fail("You can not update this event!");
-            }
+            //if (obj.UserId != authUserId)
+            //{
+            //    return ServiceResponse.Fail("You can not update this event!");
+            //}
 
             try
             {

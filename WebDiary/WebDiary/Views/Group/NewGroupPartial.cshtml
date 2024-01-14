@@ -1,0 +1,86 @@
+﻿@using System.Security.Claims;
+@model WebDiary.Models.GroupViewModel
+
+@*
+https://stackoverflow.com/questions/60633022/how-can-i-render-partial-view-as-modal-popup-on-button-click *@
+@* <h1>Group Details</h1>
+
+<h2>Id: @Model.Id</h2>
+<h2>Name: @Model.Name</h2>
+ *@
+
+<div class="modal fade" id="gameModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <h4 class="modal-title">
+                        Create Group
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="Name"><i>Name</i></label>
+                        <input type="text" class="form-control" id="Name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <table>
+                            <tr>
+                                <td>
+                                    @*input field for mails, when here add mail,  listbox in right side add a name user*@
+                                    <label for="UserEmail"><i>User Email</i></label>
+                                    <input type="text" class="form-control" id="UserEmail" >
+
+                                </td>
+                                <td>
+                                    <label for="UserEmail"><i></i></label>
+                                    <button type="submit" class="form-control btn-success" id="btnAdd">Add</button>
+                                </td>
+                                @*Passing Data from HTML Control to Another Control*@
+                                <td>
+                                    <label for="UsersAdded"><i>Added users</i></label>
+                                    <input type="text" class="form-control" id="UsersAdded" >
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success" id="btnSave">Create</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal" id="btnClose">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("#btnSave").click(function (event) {
+        Add(event);
+    });
+    function Add(event) {
+        event.preventDefault();
+
+        var groupdto =
+        {
+            userId: '@User.FindFirstValue(ClaimTypes.NameIdentifier)',
+            name: $('#Name').val()
+        };
+
+        $.ajax({
+            url: "/Group/CreateGroup",
+            data: JSON.stringify(groupdto),
+            type: "POST",
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            success: function (result) {
+                alert(result);
+            },
+            error: function (errormessage) {
+                alert(errormessage.responseText);
+            }
+        });
+    }
+</script>

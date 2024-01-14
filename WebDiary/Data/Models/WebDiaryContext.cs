@@ -41,7 +41,7 @@ public partial class WebDiaryContext : IdentityDbContext<User>
 
         modelBuilder.Entity<Group>()
         .HasMany(e => e.Users)
-        .WithMany(e => e.Groups)
+        .WithMany(e => e.JoinedGroups)
         .UsingEntity(
             "UserGroups",
             l => l.HasOne(typeof(User)).WithMany().HasForeignKey("UsersId").HasPrincipalKey(nameof(User.Id)),
@@ -52,6 +52,13 @@ public partial class WebDiaryContext : IdentityDbContext<User>
         .HasMany(e => e.Events)
         .WithOne(e => e.User)
         .HasForeignKey(e => e.UserId)
+        .IsRequired();
+
+        modelBuilder.Entity<User>()
+        .HasMany(e => e.CreatedGroups)
+        .WithOne(e => e.User)
+        .HasForeignKey(e => e.UserId)
+        .OnDelete(deleteBehavior: DeleteBehavior.NoAction) //!
         .IsRequired();
 
         modelBuilder.Entity<Group>()

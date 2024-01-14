@@ -1,7 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using WebDiary.BLL.Models;
+using WebDiary.BLL.Services;
 using WebDiary.BLL.Services.Interfaces;
+using WebDiary.Models;
 
 namespace WebDiary.Controllers
 {
@@ -17,10 +21,27 @@ namespace WebDiary.Controllers
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public IActionResult ShowpopUp()
+        [HttpGet]
+        public IActionResult NewGroupPartial() //CreateEventCommentPartial
         {
-            //specify the name or path of the partial view
-            return PartialView("_GroupPartial");
+            return PartialView("NewGroupPartial");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateGroup([FromBody] GroupViewModel groupModel)
+        {
+            var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var objDTO = _mapper.Map<GroupDTO>(groupModel);
+            var result = await _groupService.CreateGroupAsync(objDTO, authUserId);
+            return Json(result.Message);
+        }
+
+        [HttpGet]
+        public IActionResult ExistGroupPartial() //CreateEventCommentPartial
+        {
+            return PartialView("ExistGroupPartial");
+        }
+
     }
 }
