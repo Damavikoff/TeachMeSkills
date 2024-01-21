@@ -6,7 +6,7 @@ using WebDiary.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<WebDiaryContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("connectionString")));
+builder.Services.AddDbContext<WebDiaryContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("connectionString")).EnableSensitiveDataLogging());
 
 builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
  .AddEntityFrameworkStores<WebDiaryContext>();
@@ -14,6 +14,7 @@ builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfi
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddAutoMapper(typeof(EventDTOMappingProfile), typeof(EventViewModelMappingProfile));
 

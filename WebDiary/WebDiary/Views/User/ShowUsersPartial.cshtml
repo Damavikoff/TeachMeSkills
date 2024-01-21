@@ -1,0 +1,13 @@
+﻿@model List<UserViewModel>
+
+<label for="Group">Choose a group:</label>
+
+<select name="Groups" class="form-control select__field" id="Group">
+    <option value="null">None</option>
+    @foreach (var g in @Model)
+    {
+        <option value="@g.Id">@g.UserName</option>
+        //html.dropdownlist
+        //javascript is not required to change html or css that the razor page is rendering.
+    }
+</select>  

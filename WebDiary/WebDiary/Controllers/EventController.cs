@@ -102,7 +102,7 @@ namespace WebDiary.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ShowUserGroupsDropDownPartial()
+        public async Task<IActionResult> ShowUserGroupsDropDownPartial() //to group controller
         {
             var result = await _groupService.ShowUserGroups(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var objsViewModels = _mapper.Map<List<GroupViewModel>>(result.Data);

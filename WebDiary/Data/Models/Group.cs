@@ -11,7 +11,7 @@ namespace WebDiary.DAL.Models
 
         [Required]
         public User? User { get; set; }
-        public List<User> Users { get; } = new();
+        public List<User> Users { get; set; } = new();
         public ICollection<Event> Events { get; } = new List<Event>();
     }
 }

@@ -54,7 +54,7 @@
             dataType: 'html',
             success: function (data) {
                 $('#new-group-modal-partial').html(data);
-                $('#gameModal').modal('show');
+                $('#createGroupModal').modal('show');
             }
         });
     }
@@ -65,8 +65,8 @@
             url: "/Group/ExistGroupPartial",
             dataType: 'html',
             success: function (data) {
-                $('#new-group-modal-partial').html(data);
-                $('#gameModal').modal('show');
+                $('#exist-group-modal-partial').html(data);
+                $('#editGroupModal').modal('show');
             }
         });
     }

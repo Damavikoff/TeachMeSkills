@@ -13,7 +13,7 @@ namespace WebDiary.Models
         [StringLength(50)]
         public string Name { get; set; }
         public string UserId { get; set; }
-        public List<UserViewModel>? Users { get; } = new();
+        public List<UserViewModel>? Users { get; set; } = new();
         public ICollection<EventViewModel>? Events { get; } = new List<EventViewModel>();
     }
 }

@@ -6,7 +6,7 @@ namespace WebDiary.DAL.Models
     {
         public ICollection<Group> JoinedGroups { get; } //= new();
         public ICollection<Group> CreatedGroups { get; set; }
-        public ICollection<Event> Events { get;  } = new List<Event>();
+        public ICollection<Event> Events { get; set; } = new List<Event>();
         public ICollection<Comment> Comments { get; set; } //= new();
     }
 }
