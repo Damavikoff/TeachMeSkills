@@ -66,9 +66,7 @@
                     MyEventsButton: {
                         text: 'My events',
                         click: function () {
-                            //where group id == null
-                            //$('.fc_with_group').toggle()
-
+                            //groupId == null
                             if ($('.fc_with_group').css('display') !== 'none') {
                                 $('.fc_with_group').toggle(false);
                                 withGroups = true;
@@ -84,7 +82,6 @@
                         text: 'Group events',
                         click: function () {
                             //groupId != null
-                            //$('.fc_without_group').toggle()
                             if ($('.fc_without_group').css('display') !== 'none') {
                                 $('.fc_without_group').toggle(false)
                             }
@@ -174,7 +171,6 @@
                     }
                     else {
                         //patch update
-                        //eventfilter
                         var eventdto =
                         {
                             id: info.event.id,
@@ -218,7 +214,7 @@
                             title: info.event.title,
                             description: info.event.extendedProps.description,
                             start: moment(info.event.start).format('YYYY-MM-DDTHH:mm'),
-                            end: moment(info.event.end).format('YYYY-MM-DDTHH:mm'),//info.event.endStr,
+                            end: moment(info.event.end).format('YYYY-MM-DDTHH:mm'),
                             allDay: info.event.allDay,
                             url: info.event.url,
                             backgroundColor: info.event.backgroundColor,
@@ -248,8 +244,6 @@
 
         //onclick does not honor html5 validation
         $("#btnSave").click(function (event) {
-            //event.preventDefault();
-
             if ($("#Title")[0].checkValidity() && $("#Start")[0].checkValidity() &&
                 $("#End")[0].checkValidity() && $("#Description")[0].checkValidity() &&
                 $("#BackgroundColor")[0].checkValidity() && $("#Url")[0].checkValidity()) {
@@ -261,13 +255,10 @@
         });
 
         $("#btnEdit").click(function (event) {
-            //event.preventDefault();
-
             if ($("#Title")[0].checkValidity() && $("#Start")[0].checkValidity() &&
                 $("#End")[0].checkValidity() && $("#Description")[0].checkValidity() &&
                 $("#BackgroundColor")[0].checkValidity() && $("#Url")[0].checkValidity()) {
-                Update(event); // when we send event to Update(event), then form validate is working, but not working correctly "IsDone" checkbox.
-                // when we not send event to Update(), then form validate is not working, but "isDone" working correctly.
+                Update(event);
             }
             else {
                 return 0;
@@ -287,8 +278,7 @@
             $('#AllDay').prop('checked', false);
             $('#Completed').prop('checked', false);
             $('input:radio[name=BackgroundColor]').each(function () { $(this).prop('checked', false); });
-            document.getElementById('Group').disabled = false;
-            $('#Group').val("null");
+            $('#schedule').children('.modal-dialog').children('.modal-content').find('.Group').val("null");
         }
 
         function ShowEventEmptyModal(sendDate) {
@@ -310,6 +300,8 @@
 
         function ShowEventFulledModal(res) {
             ClearEventModal();
+            var groupVal = $('#schedule').children('.modal-dialog').children('.modal-content').find('.Group');
+            console.log(groupVal);
             $('#Id').val(res.id);
             $('#Title').val(res.title);
             if (res.isDone !== false) {
@@ -320,9 +312,9 @@
                 document.getElementById("DoneTime").innerHTML = donetime;
             }
             if (res.groupIdentificator == null) {
-                $('#Group').val("null");
+                groupVal.val("null");
             } else {
-                $('#Group').val(res.groupIdentificator);
+                groupVal.val(res.groupIdentificator);
             }
             $('#DoneId').val(res.donedById);
             $('#UserId').val(res.userId);
@@ -350,7 +342,6 @@
             else {
                 $('#schedule :input').prop('disabled', false);
                 $('#btnClose').prop('disabled', false);
-                document.getElementById('Group').disabled = false;
             };
             $('#schedule').modal('show');
 
@@ -407,11 +398,12 @@
 
         function Add(event) {
             event.preventDefault();
+            var groupVal = $('#schedule').children('.modal-dialog').children('.modal-content').find('.Group').val();
 
             var eventdto =
             {
                 userId: '@User.FindFirstValue(ClaimTypes.NameIdentifier)',
-                groupIdentificator: $('#Group').val(),
+                groupIdentificator: groupVal,//$('.Group').val(),
                 title: $('#Title').val(),
                 description: $('#Description').val(),
                 start: $('#Start').val(),
@@ -421,7 +413,7 @@
                 backgroundColor: $('input[name="BackgroundColor"]:checked').val(),
             };
 
-            if ($('#Group').val() == "null") {
+            if (groupVal === "null") {
                 eventdto.groupIdentificator = null;
             };
 
@@ -445,6 +437,45 @@
                     //for (n1 in data) {
                     //    console.log(n1);
                     //}
+                    alert(errormessage.responseText);
+                }
+            });
+        }
+
+        function Update(event) {
+            event.preventDefault();
+
+            var groupVal = $('#schedule').children('.modal-dialog').children('.modal-content').find('.Group').val();
+
+            var eventdto =
+            {
+                userId: $('#UserId').val(),
+                id: $('#Id').val(),
+                isDone: $('#Completed').is(':checked'),
+                title: $('#Title').val(),
+                description: $('#Description').val(),
+                start: $('#Start').val(),
+                end: $('#End').val(),
+                allDay: $('#AllDay').is(':checked'),
+                url: $('#Url').val(),
+                backgroundColor: $('input[name="BackgroundColor"]:checked').val(),
+                donedById: $('#DoneId').val() === "" ? null : $('#DoneId').val(),
+                donedAt: $('#DoneTime').text() === "" ? null : moment($('#DoneTime').text()).format('YYYY-MM-DDTHH:mm'),
+                donedBy: $('#DoneUser').text() === "" ? null : $('#DoneUser').text(),
+                groupIdentificator: groupVal === "null" ? null : groupVal
+            };
+
+            $.ajax({
+                url: "/Event/UpdateEvent",
+                data: JSON.stringify(eventdto),
+                type: "POST",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    alert(result);
+                    someCalendar.refetchEvents();
+                },
+                error: function (errormessage) {
                     alert(errormessage.responseText);
                 }
             });
@@ -474,44 +505,6 @@
             } else {
                 alert("Event is not deleted!");
             }
-        }
-
-        function Update(event) {
-            event.preventDefault();
-            //get here event obj by eventClick fullcalendar function
-            var eventdto =
-            {
-                userId: $('#UserId').val(),
-                id: $('#Id').val(),
-                isDone: $('#Completed').is(':checked'),
-                title: $('#Title').val(),
-                description: $('#Description').val(),
-                start: $('#Start').val(),
-                end: $('#End').val(),
-                allDay: $('#AllDay').is(':checked'),
-                url: $('#Url').val(),
-                backgroundColor: $('input[name="BackgroundColor"]:checked').val(),
-                donedById: $('#DoneId').val() === "" ? null : $('#DoneId').val(),
-                donedAt: $('#DoneTime').text() === "" ? null : moment($('#DoneTime').text()).format('YYYY-MM-DDTHH:mm'),
-                donedBy: $('#DoneUser').text() === "" ? null : $('#DoneUser').text(),
-                groupIdentificator: $('#Group').val() === "null" ? null : $('#Group').val()
-
-            };
-
-            $.ajax({
-                url: "/Event/UpdateEvent",
-                data: JSON.stringify(eventdto),
-                type: "POST",
-                contentType: "application/json;charset=utf-8",
-                dataType: "json",
-                success: function (result) {
-                    alert(result);
-                    someCalendar.refetchEvents();
-                },
-                error: function (errormessage) {
-                    alert(errormessage.responseText);
-                }
-            });
         }
     </script>
 }
@@ -552,22 +545,18 @@
                 <div class="modal-header">
                     <h4 class="modal-title">
                         Your Schedule
-
                     </h4>
                     <div class="form-group">
                         <label for="Completed" id="completed"><b>Done</b></label>
-                        <input type="checkbox" id="Completed">  @* onclick="return UpdateIsDone();" *@
+                        <input type="checkbox" id="Completed">
 
                         <small class="c-badge">
                             <input type="hidden" class="form-control" id="DoneId">
                             <h6>
                                 <span id="DoneUserBy"></span><span id="DoneUser"></span>
-                                @* </h6>
-                                <h6> *@
                                 <span id="DoneTimeAt"></span><span id="DoneTime"></span>
                             </h6>
                         </small>
-
                     </div>
                 </div>
                 <div class="modal-body">
@@ -605,12 +594,14 @@
                         <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#505149" style="display:none" />
                     </div>
 
+                    @*group select here*@
                     <script>
                         $(document).ready(function () {
-                            $('#group-selector-partial').load('/Event/ShowUserGroupsDropDownPartial');
+                            $('.group-selector-partial').load('/Event/ShowUserGroupsDropDownPartial');
                         });
                     </script>
-                    <div id="group-selector-partial"> </div>
+                    <div class="group-selector-partial"> </div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-danger" id="btnDelete" formnovalidate="formnovalidate" onclick="return Delete(event);">Delete event</button>  @*//formnovalidate?*@
@@ -620,12 +611,9 @@
                 </div>
             </form>
 
-
             @*comment section here*@
             <div id="show-event-comments-partial"> </div>
             <div id="create-comment-section-partial"> </div>
-
         </div>
     </div>
 </div>
-

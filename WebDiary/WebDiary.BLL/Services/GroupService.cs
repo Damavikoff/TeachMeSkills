@@ -4,7 +4,6 @@ using WebDiary.BLL.Models;
 using WebDiary.BLL.Models.ServiceResponses;
 using WebDiary.BLL.Services.Interfaces;
 using WebDiary.DAL.Models;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace WebDiary.BLL.Services
 {
@@ -16,37 +15,6 @@ namespace WebDiary.BLL.Services
         {
             _webDiaryContext = webDiaryContext ?? throw new ArgumentNullException(nameof(webDiaryContext));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        }
-
-        /// <summary>
-        /// Create a new group
-        /// </summary>
-        public async Task<ServiceResponse> CreateGroupAsync(GroupDTO groupModel, string authUserId)
-        {
-            if (authUserId == null)
-                return ServiceResponse.Fail("You are not authenticated!");
-            groupModel.Id = Guid.NewGuid();
-            //var test = _webDiaryContext.Users.FirstOrDefault(sc => sc.UserName == "test3@mail.ru");
-            //_webDiaryContext.Entry(test).State = EntityState.Unchanged;
-            var obj = _mapper.Map<Group>(groupModel);
-            foreach (var r in obj.Users)
-            {
-                _webDiaryContext.Users.Attach(r);
-            }
-            try
-            {
-                //test.Id = Guid.NewGuid();
-                //var obj = _mapper.Map<Group>(groupModel);
-                //obj.Users.Add(test);
-                _webDiaryContext.Groups.Add(obj);
-                await _webDiaryContext.SaveChangesAsync();
-
-                return ServiceResponse.Success("Group successfully created!");
-            }
-            catch (Exception ex)
-            {
-                return ServiceResponse.Fail(ex.Message);
-            }
         }
 
         /// <summary>
@@ -67,19 +35,125 @@ namespace WebDiary.BLL.Services
             return ServiceDataResponse<List<GroupDTO>>.Success(userGroupsDTO);
         }
 
-        public Task<ServiceResponse> UpdateGroupAsync(GroupDTO groupModel, string authUserId)
+        /// <summary>
+        /// Get group by ID
+        /// </summary>
+        public async Task<ServiceDataResponse<GroupDTO>> GetGroupAsync(Guid groupId, string userId)
         {
-            throw new NotImplementedException();
+            var obj = await _webDiaryContext.Groups.Include(p => p.Users).FirstOrDefaultAsync(p => p.Id == groupId);
+
+            if (obj == null)
+                return ServiceDataResponse<GroupDTO>.Fail("Group is not founded!");
+
+            var objDTO = _mapper.Map<GroupDTO>(obj);
+
+            return ServiceDataResponse<GroupDTO>.Success(objDTO);
         }
 
-        public Task<ServiceResponse> DeleteGroupAsync(Guid groupId, string authUserId)
+        /// <summary>
+        /// Create a new group
+        /// </summary>
+        public async Task<ServiceResponse> CreateGroupAsync(GroupDTO groupModel, string authUserId)
         {
-            throw new NotImplementedException();
+            if (authUserId == null)
+                return ServiceResponse.Fail("You are not authenticated!");
+
+            groupModel.Id = Guid.NewGuid();
+            //var test = _webDiaryContext.Users.FirstOrDefault(sc => sc.UserName == "test3@mail.ru");
+            //_webDiaryContext.Entry(test).State = EntityState.Unchanged;
+            var obj = _mapper.Map<Group>(groupModel);
+
+            //add auth user to new group
+            var creator = _webDiaryContext.Users.FirstOrDefault(sc => sc.Id == authUserId);
+
+            if (creator != null)
+            {
+                obj.Users.Add(creator);
+            }
+
+            foreach (var r in obj.Users)
+            {
+                _webDiaryContext.Users.Attach(r);
+            }
+
+            try
+            {
+                //test.Id = Guid.NewGuid();
+                //var obj = _mapper.Map<Group>(groupModel);
+                //obj.Users.Add(test);
+                _webDiaryContext.Groups.Add(obj);
+                await _webDiaryContext.SaveChangesAsync();
+
+                return ServiceResponse.Success("Group successfully created!");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResponse.Fail(ex.Message);
+            }
         }
 
-        public Task<ServiceDataResponse<GroupDTO>> GetGroupAsync(Guid groupId, string userId)
+        /// <summary>
+        /// Update existing group 
+        /// </summary>
+        public async Task<ServiceResponse> UpdateGroupAsync(GroupDTO groupModel, string authUserId)
         {
-            throw new NotImplementedException();
+            var obj = await _webDiaryContext.Groups
+                                             .Include(p => p.Users)
+                                             .FirstOrDefaultAsync(p => p.Id == groupModel.Id);
+            //if (obj.UserId != authUserId)
+            //{
+            //    return ServiceResponse.Fail("You can not update this group!");
+            //}
+
+            //some check for users in obj and in groupModel?
+            if (obj.Users != null)
+            {
+                obj.Users.Clear();
+            }
+
+            try
+            {
+                var availableUsers = await _webDiaryContext.Users.ToListAsync();
+
+                foreach (var user in groupModel.Users)
+                {
+                    obj.Users.Add(availableUsers.First(p => p.Id == user.Id)); // do i need availableUsers?
+                }
+
+                obj.Name = groupModel.Name;
+                //func for change group creator
+
+                await _webDiaryContext.SaveChangesAsync();
+
+                return ServiceResponse.Success("Group successfully updated!");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResponse.Fail(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Delete existing group 
+        /// </summary>
+        public async Task<ServiceResponse> DeleteGroupAsync(Guid groupId, string authUserId)
+        {
+            var obj = await _webDiaryContext.Groups.FirstOrDefaultAsync(p => p.Id == groupId);
+
+            if (obj == null)
+            {
+                return ServiceResponse.Fail("Group is not founded!");
+            }
+
+            if (obj.UserId != authUserId)
+            {
+                return ServiceResponse.Fail("You can not delete this group!");
+            }
+
+            _webDiaryContext.Groups.Remove(obj);
+            await _webDiaryContext.SaveChangesAsync();
+
+            return ServiceResponse.Success("Group successfully deleted!");
         }
     }
 }

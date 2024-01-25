@@ -13,12 +13,10 @@
         <li class="nav-item">
             <a class="nav-link text-dark">Manage groups</a>
             <ul>
-                <li><a onclick="ShowNewGroupModal()">New</a></li>
-                <li><a onclick="ShowExistGroupModal()">Exist</a></li>
+                <li><a onclick="ShowManageGroupModal()">New</a></li>
             </ul>
         </li>
     }
-
 </ul>
 
 <ul class="navbar-nav">
@@ -43,30 +41,16 @@
         </li>
     }
 </ul>
-<div id="new-group-modal-partial"> </div>
-<div id="exist-group-modal-partial"> </div>
+<div id="manage-group-modal-partial"> </div>
 <script>
-
-    function ShowNewGroupModal() {
+    function ShowManageGroupModal() {
         $.ajax({
             type: "GET",
-            url: "/Group/NewGroupPartial",
+            url: "/Group/ManageGroupPartial",
             dataType: 'html',
             success: function (data) {
-                $('#new-group-modal-partial').html(data);
-                $('#createGroupModal').modal('show');
-            }
-        });
-    }
-
-    function ShowExistGroupModal() {
-        $.ajax({
-            type: "GET",
-            url: "/Group/ExistGroupPartial",
-            dataType: 'html',
-            success: function (data) {
-                $('#exist-group-modal-partial').html(data);
-                $('#editGroupModal').modal('show');
+                $('#manage-group-modal-partial').html(data);
+                $('#ManageGroupModal').modal('show');
             }
         });
     }

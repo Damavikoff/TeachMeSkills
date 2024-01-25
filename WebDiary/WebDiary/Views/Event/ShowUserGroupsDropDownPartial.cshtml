@@ -2,12 +2,10 @@
 
 <label for="Group">Choose a group:</label>
 
-<select name="Groups" class="form-control select__field" id="Group">
+<select name="Groups" class="Group form-control select__field">
      <option value="null">None</option>
      @foreach(var g in @Model)
      {
          <option value="@g.Id">@g.Name</option>
-         //html.dropdownlist
-         //javascript is not required to change html or css that the razor page is rendering.
      }
 </select>  

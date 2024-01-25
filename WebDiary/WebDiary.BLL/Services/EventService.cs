@@ -128,7 +128,7 @@ namespace WebDiary.BLL.Services
         public async Task<ServiceResponse> UpdateEventAsync(EventDTO eventModel, string authUserId)
         {
             var obj = await _webDiaryContext.Events.AsNoTracking()
-                                                    .FirstOrDefaultAsync(p => p.Id == eventModel.Id);
+                                                   .FirstOrDefaultAsync(p => p.Id == eventModel.Id);
 
             //if (obj.UserId != authUserId)
             //{
@@ -191,14 +191,14 @@ namespace WebDiary.BLL.Services
         {
             var obj = await _webDiaryContext.Events.FirstOrDefaultAsync(p => p.Id == eventId);
 
-            if (obj.UserId != authUserId)
-            {
-                return ServiceResponse.Fail("You can not delete this event!");
-            }
-
             if (obj == null)
             {
                 return ServiceResponse.Fail("Event is not founded!");
+            }
+
+            if (obj.UserId != authUserId)
+            {
+                return ServiceResponse.Fail("You can not delete this event!");
             }
 
             _webDiaryContext.Events.Remove(obj);

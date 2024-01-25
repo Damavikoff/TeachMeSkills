@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using WebDiary.BLL.Models;
 using WebDiary.BLL.Services;
 using WebDiary.BLL.Services.Interfaces;
 using WebDiary.Models;
+using WebDiary.Services.FilterAttributes;
 
 namespace WebDiary.Controllers
 {
@@ -22,18 +22,14 @@ namespace WebDiary.Controllers
         }
 
         [HttpGet]
-        public IActionResult NewGroupPartial() //CreateEventCommentPartial
+        public IActionResult ManageGroupPartial() //CreateEventCommentPartial
         {
-            return PartialView("NewGroupPartial");
+            return PartialView("ManageGroupPartial");
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateGroup([FromBody] GroupViewModel groupModel)
         {
-            //попробовать тут создать груп модель со всеми данными и посмотреть как она вынесется в БД.
-            //Нужен ли объект юзера или можно ид юзера передать чтоб в таблице юзергрупс все норм замапилось?
-            //может на клиенте делать запрос к БД на юзеров? или как-то 
-            //
             var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var objDTO = _mapper.Map<GroupDTO>(groupModel);
@@ -41,11 +37,46 @@ namespace WebDiary.Controllers
             return Json(result.Message);
         }
 
+        //[HttpGet]
+        //public IActionResult ExistGroupPartial() //CreateEventCommentPartial
+        //{
+        //    return PartialView("ExistGroupPartial");
+        //}
+
         [HttpGet]
-        public IActionResult ExistGroupPartial() //CreateEventCommentPartial
+        public async Task<IActionResult> GetGroup(Guid groupId) //CreateEventCommentPartial
         {
-            return PartialView("ExistGroupPartial");
+            var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var result = await _groupService.GetGroupAsync(groupId, authUserId);
+
+            if (result.Succeeded == false)
+            {
+                return Json(result.Message); //как-то поправить, мне не нравится что возвращает джсон а не что-то типа BadRequest
+            }
+
+            var objViewModel = _mapper.Map<GroupViewModel>(result.Data);
+            return Ok(objViewModel);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> DeleteGroup([FromBody] Guid id)
+        {
+            var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var result = await _groupService.DeleteGroupAsync(id, authUserId);
+            return Json(result.Message);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateGroup([FromBody] GroupViewModel groupModel)
+        {
+            //here i get userId. And i have userId in groupModel (for validate in Groupservice?)
+            var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var objDTO = _mapper.Map<GroupDTO>(groupModel);
+            var result = await _groupService.UpdateGroupAsync(objDTO, authUserId);
+            return Json(result.Message);
+        }
     }
 }

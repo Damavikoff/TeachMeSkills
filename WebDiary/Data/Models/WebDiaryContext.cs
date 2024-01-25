@@ -64,8 +64,8 @@ public partial class WebDiaryContext : IdentityDbContext<User>
         modelBuilder.Entity<Group>()
         .HasMany(e => e.Events)
         .WithOne(e => e.Group)
-        .HasForeignKey(e => e.GroupIdentificator);
-        //.IsRequired();
+        .HasForeignKey(e => e.GroupIdentificator)
+        .OnDelete(deleteBehavior: DeleteBehavior.SetNull);
 
         modelBuilder.Entity<Comment>()
         .HasOne(p => p.Event).WithMany(b => b.Comments)

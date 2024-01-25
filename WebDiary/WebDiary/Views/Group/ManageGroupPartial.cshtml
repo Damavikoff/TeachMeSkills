@@ -1,0 +1,270 @@
+﻿@using System.Security.Claims;
+@model WebDiary.Models.GroupViewModel
+
+@* https://stackoverflow.com/questions/60633022/how-can-i-render-partial-view-as-modal-popup-on-button-click *@
+
+<div class="modal fade" id="ManageGroupModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <h4 class="modal-title" id="title">
+                        Create group
+                    </h4>
+                    <div class="group-selector-partial2"> </div>
+                    <script>
+                        $(document).ready(function () {
+                            $('#btnEditGroup').hide();
+                            $('#btnDeleteEdit').hide();
+                            $('.group-selector-partial2').load('/Event/ShowUserGroupsDropDownPartial');
+                        });
+                    </script>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" class="form-control" id="GroupId">
+                    <input type="hidden" class="form-control" id="UserGroupId">
+                    <div class="form-group">
+                        <label for="Name"><i>Name</i></label>
+                        <input type="text" class="form-control" id="Name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <table>
+                            <tr>
+                                <td>
+                                    @*TODO: send messages if user not exist*@
+                                    @*TODO: auth user should not to be shown in dropdown*@
+                                    @*TODO: users in users select should not to be shown in dropdown*@
+                                    <label for="UserEmail"><i>User Email</i></label>
+                                    <input type="text" id="myInput" oninput="GetSearch()" class="form-control">
+                                    <div id="myDropdown" class="dropdown-content"></div>
+                                </td>
+                                <td>
+                                    <label for="UserEmail"><i></i></label>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="UsersAdded"><i>Added users</i></label>
+                        <select name="select" class="form-control" id="users" multiple></select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal" id="btnDeleteGroup" formnovalidate="formnovalidate" onclick="return DeleteGroup(event)">Delete</button>
+                    <button type="submit" class="btn btn-success" id="btnEditGroup">Save</button>
+                    <button type="submit" class="btn btn-success" id="btnSaveGroup">Create</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal" id="btnCloseAdd">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    var arrUsersSearch = new Array();
+    var arrUsersToAdd = new Array();
+
+    $('#btnCloseAdd').click(function () {
+        $('#ManageGroupModal').modal('hide');
+    });
+
+    $("#btnSaveGroup").click(function (event) {
+        if ($("#Name")[0].checkValidity()) {
+            AddGroup(event);
+        }
+        else {
+            return 0;
+        }
+    });
+
+    $("#btnEditGroup").click(function (event) {
+        if ($("#Name")[0].checkValidity()) {
+            UpdateGroup(event);
+        }
+        else {
+            return 0;
+        }
+    });
+
+    $('.group-selector-partial2').change(function () {
+        $('#Name').val("");
+        $('#GroupId').val("");
+        $('#UserGroupId').val("");
+        $('#users').empty(); //find('option').remove().end();
+        
+        var selectedGroupId = $(this).find('.Group').val();
+        console.log(selectedGroupId);
+        if (selectedGroupId != "null") {
+            arrUsersToAdd = [];
+            $('#btnEditGroup').show();
+            $('#btnDeleteEdit').show();
+            $('#btnSaveGroup').hide();
+            $('#title').text("Edit group");
+            var selectedGroup = GetGroup(selectedGroupId);
+            FillGroupModal(selectedGroup.responseJSON);
+        }
+        else {
+            arrUsersToAdd = [];
+            $('#ManageGroupModal :input').prop('disabled', false);
+            $('#btnCloseAdd').prop('disabled', false);
+            $('#btnEditGroup').hide();
+            $('#btnDeleteEdit').hide();
+            $('#btnSaveGroup').show();
+            $('#title').text("Create group");
+        }
+    });
+
+    $("#myDropdown").on("click", ".user", function (evt) {
+        var arrUserId = this.getAttribute("value");
+        var arrUserName = $(this).text();
+
+        arrUsersSearch.forEach(function (elem) {
+            if (elem.id === arrUserId) {
+                arrUsersToAdd.push(elem);
+            }
+        });
+        $('#users').append("<option value=" + arrUserId + ">" + arrUserName + "</option>");
+        $('#myInput').val("");
+    });
+
+    document.addEventListener("click", function (e) {
+        $('#myDropdown').html("");
+    });
+
+    function GetSearch() {
+        $.ajax({
+            type: "POST",
+            url: "/User/SearchUser",
+            data: { search: $("#myInput").val() },
+            success: function (data) {
+                $('#myDropdown').html("");
+                arrUsersSearch = [];
+                data.forEach(function (element) {
+                    arrUsersSearch.push(element);
+                    $('#myDropdown').append("<a value=" + element.id + " class=" + "user" + ">" + element.userName + "</a>");
+                });
+            }
+        });
+    }
+
+    function GetGroup(selectedGroupId) {
+        return $.ajax({
+            dataType: 'json',
+            type: "GET",
+            url: "/Group/GetGroup",
+            async: false,
+            data: { groupId: selectedGroupId },
+            success: function (data) {
+            }
+        });
+    }
+
+    function FillGroupModal(selectedGroup) {
+        if (selectedGroup.userId != '@User.FindFirstValue(ClaimTypes.NameIdentifier)') {
+            $('#btnEditGroup').hide();
+            $('#btnDeleteEdit').hide();
+            $('#Name').prop('disabled', true);
+            $('#users').prop('disabled', true); myInput
+            $('#myInput').prop('disabled', true);
+        }
+        else {
+            $('#btnEditGroup').show();
+            $('#btnDeleteEdit').show();
+            $('#ManageGroupModal :input').prop('disabled', false);
+            $('#btnCloseAdd').prop('disabled', false);
+        };
+        $('#Name').val(selectedGroup.name);
+        $('#GroupId').val(selectedGroup.id);
+        $('#UserGroupId').val(selectedGroup.userId);
+        if (selectedGroup.users != null) {
+            selectedGroup.users.forEach(function (element) {
+                arrUsersToAdd.push(element);
+                $('#users').append("<option value=" + element.id + ">" + element.userName + "</option>");
+            });
+        }
+        console.log("fillmodal: " + arrUsersToAdd);
+    }
+
+    function AddGroup(event) {
+        event.preventDefault();
+
+        var groupdto =
+        {
+            name: $('#Name').val(),
+            userId: '@User.FindFirstValue(ClaimTypes.NameIdentifier)',
+            users: arrUsersToAdd
+        };
+
+        $.ajax({
+            url: "/Group/CreateGroup",
+            data: JSON.stringify(groupdto),
+            type: "POST",
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            success: function (result) {
+                alert(result);
+                $('#users').html("");
+                arrUsersToAdd = [];
+            },
+            error: function (errormessage) {
+                alert(errormessage.responseText);
+            }
+        });
+    }
+
+    function UpdateGroup(event) {
+        event.preventDefault();
+
+        var groupdto =
+        {
+            id: $('#GroupId').val(),
+            name: $('#Name').val(),
+            userId: $('#UserGroupId').val(),
+            users: arrUsersToAdd
+        };
+
+        $.ajax({
+            url: "/Group/UpdateGroup",
+            data: JSON.stringify(groupdto),
+            type: "POST",
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            success: function (result) {
+                alert(result);
+                arrUsersToAdd = [];
+            },
+            error: function (errormessage) {
+                alert(errormessage.responseText);
+            }
+        });
+    }
+
+    function DeleteGroup(event) {
+        event.preventDefault();
+
+        const result = confirm('Are you sure to delete group "' + $('#Name').val() + '" ?');
+
+        if (result) {
+            var groupId = $('#GroupId').val();
+            $.ajax({
+                url: "/Group/DeleteGroup",
+                data: JSON.stringify(groupId),
+                type: "POST",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    $('#ManageGroupModal').modal('hide');
+                    alert(result);
+                    someCalendar.refetchEvents();
+                },
+                error: function (errormessage) {
+                    alert(errormessage.responseText);
+                }
+            });
+        } else {
+            alert("Group is not deleted!");
+        }
+    }
+</script>
