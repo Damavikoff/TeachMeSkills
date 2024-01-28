@@ -9,18 +9,16 @@ using WebDiary.Services.FilterAttributes;
 
 namespace WebDiary.Controllers
 {
-    //add logger
-    public class EventController : Controller
+    
+    public class EventController : Controller //TODO: add logger
     {
         //private readonly ILogger<EventController> _logger;
         private readonly IMapper _mapper;
         private readonly IEventService _eventService;
-        private readonly IGroupService _groupService;
 
-        public EventController(IEventService eventService, IGroupService groupService, IMapper mapper, ICommentService commentService)
+        public EventController(IEventService eventService, IMapper mapper)
         {
             _eventService = eventService ?? throw new ArgumentNullException(nameof(eventService));
-            _groupService = groupService ?? throw new ArgumentNullException(nameof(groupService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
         public IActionResult Index()
@@ -41,10 +39,10 @@ namespace WebDiary.Controllers
 
             var result = await _eventService.LoadEventsAsync(start, end, userId);
 
-            //if (result.Succeeded == false)
-            //{
-            //    return Json(result); //
-            //}
+            if (result.Succeeded == false)
+            {
+                return Json(result);
+            }
 
             var objsViewModels = _mapper.Map<List<EventViewModel>>(result.Data);
 
@@ -65,8 +63,6 @@ namespace WebDiary.Controllers
 
             var objViewModel = _mapper.Map<EventViewModel>(result.Data);
             return Ok(objViewModel);
-            //return View("Index",objViewModel);
-            //return Json(objViewModel);
         }
 
         [HttpPost]
@@ -99,14 +95,6 @@ namespace WebDiary.Controllers
 
             var result = await _eventService.DeleteEventAsync(id, authUserId);
             return Json(result.Message);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> ShowUserGroupsDropDownPartial() //to group controller
-        {
-            var result = await _groupService.ShowUserGroups(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var objsViewModels = _mapper.Map<List<GroupViewModel>>(result.Data);
-            return PartialView(objsViewModels);
         }
     }
 }

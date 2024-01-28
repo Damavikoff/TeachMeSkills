@@ -85,8 +85,9 @@ namespace WebDiary.BLL.Services
 
             var obj = await _webDiaryContext.Events.Include(p => p.Group)
                                                    .Include(p => p.User)
+                                                   .Include(p=>p.DonedBy)
                                                    .FirstOrDefaultAsync(p => p.Id == eventId);
-
+            
             //if (obj.UserId != authUserId)
             //    return ServiceDataResponse<EventDTO>.Fail("You can not get this event!");
             //какой-нибудь чек доступен ли пользователю этот ивент для просмотра

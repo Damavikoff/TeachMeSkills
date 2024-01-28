@@ -15,8 +15,8 @@
                     <script>
                         $(document).ready(function () {
                             $('#btnEditGroup').hide();
-                            $('#btnDeleteEdit').hide();
-                            $('.group-selector-partial2').load('/Event/ShowUserGroupsDropDownPartial');
+                            $('#btnDeleteGroup').hide();
+                            $('.group-selector-partial2').load('/Group/ShowUserGroupsDropDownPartial');
                         });
                     </script>
                 </div>
@@ -24,7 +24,7 @@
                     <input type="hidden" class="form-control" id="GroupId">
                     <input type="hidden" class="form-control" id="UserGroupId">
                     <div class="form-group">
-                        <label for="Name"><i>Name</i></label>
+                        <label for="Name"><b>Name</b></label>
                         <input type="text" class="form-control" id="Name" required>
                     </div>
 
@@ -32,10 +32,7 @@
                         <table>
                             <tr>
                                 <td>
-                                    @*TODO: send messages if user not exist*@
-                                    @*TODO: auth user should not to be shown in dropdown*@
-                                    @*TODO: users in users select should not to be shown in dropdown*@
-                                    <label for="UserEmail"><i>User Email</i></label>
+                                    <label for="UserEmail">User Email</label>
                                     <input type="text" id="myInput" oninput="GetSearch()" class="form-control">
                                     <div id="myDropdown" class="dropdown-content"></div>
                                 </td>
@@ -47,7 +44,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="UsersAdded"><i>Added users</i></label>
+                        <label for="UsersAdded">Added users</label>
                         <select name="select" class="form-control" id="users" multiple></select>
                     </div>
                 </div>
@@ -92,14 +89,14 @@
         $('#Name').val("");
         $('#GroupId').val("");
         $('#UserGroupId').val("");
-        $('#users').empty(); //find('option').remove().end();
+        $('#users').empty(); 
         
         var selectedGroupId = $(this).find('.Group').val();
         console.log(selectedGroupId);
         if (selectedGroupId != "null") {
             arrUsersToAdd = [];
             $('#btnEditGroup').show();
-            $('#btnDeleteEdit').show();
+            $('#btnDeleteGroup').show();
             $('#btnSaveGroup').hide();
             $('#title').text("Edit group");
             var selectedGroup = GetGroup(selectedGroupId);
@@ -110,7 +107,7 @@
             $('#ManageGroupModal :input').prop('disabled', false);
             $('#btnCloseAdd').prop('disabled', false);
             $('#btnEditGroup').hide();
-            $('#btnDeleteEdit').hide();
+            $('#btnDeleteGroup').hide();
             $('#btnSaveGroup').show();
             $('#title').text("Create group");
         }
@@ -125,8 +122,15 @@
                 arrUsersToAdd.push(elem);
             }
         });
-        $('#users').append("<option value=" + arrUserId + ">" + arrUserName + "</option>");
+        $('#users').append("<option value=" + arrUserId + " class=selUser>" + arrUserName + "</option>");
         $('#myInput').val("");
+    });
+
+    $("#users").on("click", ".selUser", function (evt) {
+        let idDel = $(this).val();
+        let objDel = arrUsersToAdd.findIndex(x => x.id === idDel);
+        arrUsersToAdd.splice(objDel, 1);
+        $(this).remove();
     });
 
     document.addEventListener("click", function (e) {
@@ -141,10 +145,20 @@
             success: function (data) {
                 $('#myDropdown').html("");
                 arrUsersSearch = [];
-                data.forEach(function (element) {
-                    arrUsersSearch.push(element);
-                    $('#myDropdown').append("<a value=" + element.id + " class=" + "user" + ">" + element.userName + "</a>");
-                });
+                if (data.length === 0) {
+                    $('#myDropdown').append("<a>" + "No users founded!" + "</a>");
+                }
+                else {
+                    data.forEach(function (element) {
+                        arrUsersSearch.push(element);
+
+                        var userid = '@User.FindFirstValue(ClaimTypes.NameIdentifier)';
+
+                        if ((element.id !== userid) && (!(arrUsersToAdd.find(e => e.id === element.id)))) {
+                            $('#myDropdown').append("<a value=" + element.id + " class=" + "user" + ">" + element.userName + "</a>");
+                        }
+                    });
+                }
             }
         });
     }
@@ -164,14 +178,14 @@
     function FillGroupModal(selectedGroup) {
         if (selectedGroup.userId != '@User.FindFirstValue(ClaimTypes.NameIdentifier)') {
             $('#btnEditGroup').hide();
-            $('#btnDeleteEdit').hide();
+            $('#btnDeleteGroup').hide();
             $('#Name').prop('disabled', true);
             $('#users').prop('disabled', true); myInput
             $('#myInput').prop('disabled', true);
         }
         else {
             $('#btnEditGroup').show();
-            $('#btnDeleteEdit').show();
+            $('#btnDeleteGroup').show();
             $('#ManageGroupModal :input').prop('disabled', false);
             $('#btnCloseAdd').prop('disabled', false);
         };
@@ -181,7 +195,7 @@
         if (selectedGroup.users != null) {
             selectedGroup.users.forEach(function (element) {
                 arrUsersToAdd.push(element);
-                $('#users').append("<option value=" + element.id + ">" + element.userName + "</option>");
+                $('#users').append("<option value=" + element.id + " class=selUser>" + element.userName + "</option>");
             });
         }
         console.log("fillmodal: " + arrUsersToAdd);
@@ -206,6 +220,7 @@
             success: function (result) {
                 alert(result);
                 $('#users').html("");
+                $('#Name').val("");
                 arrUsersToAdd = [];
             },
             error: function (errormessage) {

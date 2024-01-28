@@ -163,75 +163,58 @@
                     $(info.el).tooltip('dispose');
                 },
                 eventDrop: function (info) {
-                    var test = info.event;
-                    console.log(info.event);
-
-                    if (!confirm("Are you sure about this change?")) {
-                        info.revert();
-                    }
-                    else {
-                        //patch update
-                        var eventdto =
-                        {
-                            id: info.event.id,
-                            userId: info.event.extendedProps.userId,
-                            groupIdentificator: info.event.extendedProps.groupIdentificator,
-                            title: info.event.title,
-                            description: info.event.extendedProps.description,
-                            start: moment(info.event.start).format('YYYY-MM-DDTHH:mm'),
-                            end: moment(info.event.end).format('YYYY-MM-DDTHH:mm'),//info.event.endStr,
-                            allDay: info.event.allDay,
-                            url: info.event.url,
-                            backgroundColor: info.event.backgroundColor,
-                            donedAt: info.event.extendedProps.donedAt,
-                            donedByEmail: info.event.extendedProps.donedByEmail,
-                            donedById: info.event.extendedProps.donedById,
-                            isDone: info.event.extendedProps.isDone
-                        };
-                        $.ajax({
-                            url: '/Event/UpdateEvent',
-                            data: JSON.stringify(eventdto),
-                            type: "POST",
-                            contentType: "application/json;charset=utf-8"
-                        }).done(function () {
-                            alert('Updated');
-                        });
-                    }
+                    var eventdto =
+                    {
+                        id: info.event.id,
+                        userId: info.event.extendedProps.userId,
+                        groupIdentificator: info.event.extendedProps.groupIdentificator,
+                        title: info.event.title,
+                        description: info.event.extendedProps.description,
+                        start: moment(info.event.start).format('YYYY-MM-DDTHH:mm'),
+                        end: moment(info.event.end).format('YYYY-MM-DDTHH:mm'),//info.event.endStr,
+                        allDay: info.event.allDay,
+                        url: info.event.url,
+                        backgroundColor: info.event.backgroundColor,
+                        donedAt: info.event.extendedProps.donedAt,
+                        donedByEmail: info.event.extendedProps.donedByEmail,
+                        donedById: info.event.extendedProps.donedById,
+                        isDone: info.event.extendedProps.isDone
+                    };
+                    $.ajax({
+                        url: '/Event/UpdateEvent',
+                        data: JSON.stringify(eventdto),
+                        type: "POST",
+                        contentType: "application/json;charset=utf-8"
+                    }).done(function () {
+                        alert('Updated');
+                    }); //if not done info.revert();
                 },
                 eventResize: function (info) {
-                    var test = info.event;
-                    console.log(info.event);
-
-                    if (!confirm("Are you sure about this change?")) {
-                        info.revert();
-                    }
-                    else {
-                        var eventdto =
-                        {
-                            id: info.event.id,
-                            userId: info.event.extendedProps.userId,
-                            groupIdentificator: info.event.extendedProps.groupIdentificator,
-                            title: info.event.title,
-                            description: info.event.extendedProps.description,
-                            start: moment(info.event.start).format('YYYY-MM-DDTHH:mm'),
-                            end: moment(info.event.end).format('YYYY-MM-DDTHH:mm'),
-                            allDay: info.event.allDay,
-                            url: info.event.url,
-                            backgroundColor: info.event.backgroundColor,
-                            donedAt: info.event.extendedProps.donedAt,
-                            donedByEmail: info.event.extendedProps.donedByEmail,
-                            donedById: info.event.extendedProps.donedById,
-                            isDone: info.event.extendedProps.isDone
-                        };
-                        $.ajax({
-                            url: '/Event/UpdateEvent',
-                            data: JSON.stringify(eventdto),
-                            type: "POST",
-                            contentType: "application/json;charset=utf-8"
-                        }).done(function () {
-                            alert('Updated');
-                        });
-                    }
+                    var eventdto =
+                    {
+                        id: info.event.id,
+                        userId: info.event.extendedProps.userId,
+                        groupIdentificator: info.event.extendedProps.groupIdentificator,
+                        title: info.event.title,
+                        description: info.event.extendedProps.description,
+                        start: moment(info.event.start).format('YYYY-MM-DDTHH:mm'),
+                        end: moment(info.event.end).format('YYYY-MM-DDTHH:mm'),
+                        allDay: info.event.allDay,
+                        url: info.event.url,
+                        backgroundColor: info.event.backgroundColor,
+                        donedAt: info.event.extendedProps.donedAt,
+                        donedByEmail: info.event.extendedProps.donedByEmail,
+                        donedById: info.event.extendedProps.donedById,
+                        isDone: info.event.extendedProps.isDone
+                    };
+                    $.ajax({
+                        url: '/Event/UpdateEvent',
+                        data: JSON.stringify(eventdto),
+                        type: "POST",
+                        contentType: "application/json;charset=utf-8"
+                    }).done(function () {
+                        alert('Updated'); //if not done info.revert();
+                    });
                 }
             });
             calendar.render();
@@ -567,7 +550,7 @@
                         <input type="text" class="form-control" id="Title" placeholder="Feed the cat" required>
                     </div>
                     <div class="form-group">
-                        <label for="Start"><i>Start</i></label>
+                        <label for="Start">Start</label>
                         <input type="datetime-local" class="form-control" id="Start" required>
                     </div>
                     <div class="form-group">
@@ -587,7 +570,7 @@
                         <input type="URL" class="form-control" id="Url" placeholder="https://food-for-every-cat.com">
                     </div>
                     <div class="form-group">
-                        <label for="BackgroundColor">Priority</label>
+                        <label for="BackgroundColor"><b>Priority</b></label>
                         <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#a895e2"> <label>High</label>
                         <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#5fbe7d" required> <label>Normal</label>
                         <input type="radio" id="BackgroundColor" name="BackgroundColor" value="#69b1ff"> <label>Low</label>
@@ -597,7 +580,7 @@
                     @*group select here*@
                     <script>
                         $(document).ready(function () {
-                            $('.group-selector-partial').load('/Event/ShowUserGroupsDropDownPartial');
+                            $('.group-selector-partial').load('/Group/ShowUserGroupsDropDownPartial');
                         });
                     </script>
                     <div class="group-selector-partial"> </div>

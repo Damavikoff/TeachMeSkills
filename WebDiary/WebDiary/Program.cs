@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebDiary.BLL.Services;
 using WebDiary.BLL.Services.Interfaces;
@@ -8,8 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<WebDiaryContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("connectionString")).EnableSensitiveDataLogging());
 
-builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
- .AddEntityFrameworkStores<WebDiaryContext>();
+builder.Services.AddIdentity<User, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+ .AddEntityFrameworkStores<WebDiaryContext>()
+ .AddDefaultTokenProviders();//
+//builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
+// .AddEntityFrameworkStores<WebDiaryContext>();
+
 
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
@@ -19,7 +24,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddAutoMapper(typeof(EventDTOMappingProfile), typeof(EventViewModelMappingProfile));
 
 builder.Services.AddControllersWithViews();
-
+builder.Services.AddRazorPages();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

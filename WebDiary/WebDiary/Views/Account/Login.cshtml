@@ -1,0 +1,33 @@
+﻿@model LoginViewModel
+
+<div class="row">
+    <div class="col-md-4">
+        <section>
+            <form method="post" asp-controller="Account" asp-action="Login"
+                  asp-route-returnUrl="@Model.ReturnUrl">
+                <h2>Use a local account to log in.</h2>
+                <hr />
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div>
+                    <label asp-for="Email" class="form-label"></label><br />
+                    <input asp-for="Email" class="form-control" autocomplete="username" aria-required="true" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div>
+                    <label asp-for="Password" class="form-label"></label><br />
+                    <input asp-for="Password" class="form-control" autocomplete="current-password" aria-required="true" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+                <div>
+                    <div class="checkbox">
+                        <label asp-for="RememberMe" class="form-label"></label><br />
+                        <input class="form-check-input" asp-for="RememberMe" />
+                    </div>
+                </div>
+                <div>
+                    <input type="submit" value="Log in" class="w-100 btn btn-lg btn-primary" />
+                </div>
+            </form>
+        </section>
+    </div>
+</div>

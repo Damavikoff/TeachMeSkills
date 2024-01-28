@@ -2,10 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using WebDiary.BLL.Models;
-using WebDiary.BLL.Services;
 using WebDiary.BLL.Services.Interfaces;
 using WebDiary.Models;
-using WebDiary.Services.FilterAttributes;
 
 namespace WebDiary.Controllers
 {
@@ -77,6 +75,14 @@ namespace WebDiary.Controllers
             var objDTO = _mapper.Map<GroupDTO>(groupModel);
             var result = await _groupService.UpdateGroupAsync(objDTO, authUserId);
             return Json(result.Message);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ShowUserGroupsDropDownPartial() //to group controller
+        {
+            var result = await _groupService.ShowUserGroups(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var objsViewModels = _mapper.Map<List<GroupViewModel>>(result.Data);
+            return PartialView(objsViewModels);
         }
     }
 }
