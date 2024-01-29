@@ -136,42 +136,6 @@
         })
     }
 
-    $('.commentDelete').click(function (event) {
-        event.preventDefault();
-
-        var commentId = $(this)
-            .closest('.w-100') // goes up in the tree until .w-100
-            .children('.align-items-center')
-            .children('.align-items-center')
-            .find('.commentId').val();
-
-        var eventId = $(this)
-            .closest('.w-100')
-            .children('.align-items-center')
-            .children('.align-items-center')
-            .find('.eventId').val();
-
-        var commentdto =
-        {
-            id: commentId,
-            eventId: eventId
-        };
-
-        $.ajax({
-            url: "/Comment/DeleteComment",
-            data: JSON.stringify(commentdto),
-            type: "POST",
-            contentType: "application/json;charset=utf-8",
-            dataType: "html",
-            success: function (data) {
-                $('#show-event-comments-partial').html(data);
-            },
-            error: function (errormessage) {
-                console.log(errormessage.responseText);
-            }
-        });
-    });
-
     $('.commentEdit').click(async function (event) {
         event.preventDefault();
 
@@ -215,11 +179,11 @@
                 $(this).find('i').text("Edit");
             }
             else if (currentCommentText !== text) {
-                //$(this).parent().prev('.text-justify').removeAttr('contenteditable');
                 $(this).parent().prev('.text-justify').prop('contenteditable', false);
                 $(this).find('i').text("Edit");
 
                 var content = {
+                    userId: '@User.FindFirstValue(ClaimTypes.NameIdentifier)',
                     ID: commentId,
                     content: $(this).parent().prev('.text-justify').text()
                 }
@@ -231,18 +195,56 @@
                     contentType: "application/json;charset=utf-8",
                     dataType: "html",
                     success: function (data) {
-                        //do nothing?
+                        console.log(data);
                     },
                     error: function (errormessage) {
-                        console.log(errormessage.responseText);
+                        alert(errormessage.responseText);
+                        //TODO: comment.revert();
                     }
                 });
             }
+
             //if changed comment is same
             else {
                 $(this).parent().prev('.text-justify').prop('contenteditable', false);
                 $(this).find('i').text("Edit");
             }
         }
+    });
+
+    $('.commentDelete').click(function (event) {
+        event.preventDefault();
+
+        var commentId = $(this)
+            .closest('.w-100')
+            .children('.align-items-center')
+            .children('.align-items-center')
+            .find('.commentId').val();
+
+        var eventId = $(this)
+            .closest('.w-100')
+            .children('.align-items-center')
+            .children('.align-items-center')
+            .find('.eventId').val();
+
+        var commentdto =
+        {
+            id: commentId,
+            eventId: eventId
+        };
+
+        $.ajax({
+            url: "/Comment/DeleteComment",
+            data: JSON.stringify(commentdto),
+            type: "POST",
+            contentType: "application/json;charset=utf-8",
+            dataType: "html",
+            success: function (data) {
+                $('#show-event-comments-partial').html(data);
+            },
+            error: function (errormessage) {
+                alert(errormessage.responseText);
+            }
+        });
     });
 </script> 

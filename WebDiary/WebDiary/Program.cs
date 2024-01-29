@@ -11,7 +11,7 @@ builder.Services.AddDbContext<WebDiaryContext>(options => options.UseSqlServer(b
 
 builder.Services.AddIdentity<User, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
  .AddEntityFrameworkStores<WebDiaryContext>()
- .AddDefaultTokenProviders();//
+ .AddDefaultTokenProviders();
 //builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
 // .AddEntityFrameworkStores<WebDiaryContext>();
 

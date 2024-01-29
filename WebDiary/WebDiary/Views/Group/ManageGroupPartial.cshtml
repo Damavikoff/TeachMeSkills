@@ -60,6 +60,10 @@
 </div>
 
 <script>
+    function isNullOrWhitespace(input) {
+        return !input || !input.trim();
+    }
+
     var arrUsersSearch = new Array();
     var arrUsersToAdd = new Array();
 
@@ -92,7 +96,7 @@
         $('#users').empty(); 
         
         var selectedGroupId = $(this).find('.Group').val();
-        console.log(selectedGroupId);
+        
         if (selectedGroupId != "null") {
             arrUsersToAdd = [];
             $('#btnEditGroup').show();
@@ -122,6 +126,7 @@
                 arrUsersToAdd.push(elem);
             }
         });
+
         $('#users').append("<option value=" + arrUserId + " class=selUser>" + arrUserName + "</option>");
         $('#myInput').val("");
     });
@@ -195,14 +200,18 @@
         if (selectedGroup.users != null) {
             selectedGroup.users.forEach(function (element) {
                 arrUsersToAdd.push(element);
-                $('#users').append("<option value=" + element.id + " class=selUser>" + element.userName + "</option>");
+                if (element.id != '@User.FindFirstValue(ClaimTypes.NameIdentifier)') {
+                    $('#users').append("<option value=" + element.id + " class=selUser>" + element.userName + "</option>");
+                }
             });
         }
-        console.log("fillmodal: " + arrUsersToAdd);
     }
 
     function AddGroup(event) {
         event.preventDefault();
+
+        if (isNullOrWhitespace($('#Name').val()))
+            return alert("Please, write not whitespace group name");
 
         var groupdto =
         {
@@ -231,6 +240,9 @@
 
     function UpdateGroup(event) {
         event.preventDefault();
+
+        if (isNullOrWhitespace($('#Name').val()))
+            return alert("Please, write not whitespace group name");
 
         var groupdto =
         {
@@ -270,8 +282,8 @@
                 contentType: "application/json;charset=utf-8",
                 dataType: "json",
                 success: function (result) {
-                    $('#ManageGroupModal').modal('hide');
                     alert(result);
+                    $('#ManageGroupModal').modal('hide');
                     someCalendar.refetchEvents();
                 },
                 error: function (errormessage) {

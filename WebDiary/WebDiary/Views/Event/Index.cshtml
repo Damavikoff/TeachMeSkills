@@ -124,15 +124,8 @@
 
                 eventClick: function (info) {
                     info.jsEvent.preventDefault(); // don't let the browser navigate
-
-                    var resp = GetEventDetails(info.event.id);
-                    if (typeof resp.responseJSON === 'object' || resp.responseJSON instanceof Object) { //мне не нравится вся эта проверка на стороне клиента, и как в js методах работает тоже, надо поправить
-                        ShowEventFulledModal(resp.responseJSON);
-                    }
-
-                    ShowEventComments(info.event.id);
-                    CreateComment(info.event.id);
-
+                    GetEventDetails(info.event.id);
+                    
                     if (info.event.url) { // open in another tab
                         window.open(info.event.url);
                     }
@@ -184,9 +177,16 @@
                         url: '/Event/UpdateEvent',
                         data: JSON.stringify(eventdto),
                         type: "POST",
-                        contentType: "application/json;charset=utf-8"
-                    }).done(function () {
-                        alert('Updated');
+                        contentType: "application/json;charset=utf-8",
+                        success: function (result) {
+                            console.log("OK");
+                        },
+                        error: function (errormessage) {
+                            alert(errormessage.responseText);
+                            info.revert();
+                        }
+                    // }).done(function () {
+                    //     alert('Updated');
                     }); //if not done info.revert();
                 },
                 eventResize: function (info) {
@@ -211,9 +211,16 @@
                         url: '/Event/UpdateEvent',
                         data: JSON.stringify(eventdto),
                         type: "POST",
-                        contentType: "application/json;charset=utf-8"
-                    }).done(function () {
-                        alert('Updated'); //if not done info.revert();
+                        contentType: "application/json;charset=utf-8",
+                        success: function (result) {
+                            console.log("OK");
+                        },
+                        error: function (errormessage) {
+                            alert(errormessage.responseText);
+                            info.revert();
+                        }
+                    // }).done(function () {
+                    //     alert('Updated'); //if not done info.revert();
                     });
                 }
             });
@@ -269,7 +276,6 @@
             $('#Start').val(sendDate);
             $('#End').val(sendDate);
             $('#schedule :input').prop('disabled', false);
-            //$('#btnClose').prop('disabled', false);
             $('#schedule').modal('show');
             $("#show-event-comments-partial").html("");
             $("#create-comment-section-partial").html("");
@@ -284,7 +290,7 @@
         function ShowEventFulledModal(res) {
             ClearEventModal();
             var groupVal = $('#schedule').children('.modal-dialog').children('.modal-content').find('.Group');
-            console.log(groupVal);
+            
             $('#Id').val(res.id);
             $('#Title').val(res.title);
             if (res.isDone !== false) {
@@ -294,11 +300,8 @@
                 document.getElementById("DoneUser").innerHTML = res.donedByEmail;
                 document.getElementById("DoneTime").innerHTML = donetime;
             }
-            if (res.groupIdentificator == null) {
-                groupVal.val("null");
-            } else {
-                groupVal.val(res.groupIdentificator);
-            }
+            res.groupIdentificator == null ? groupVal.val("null") : groupVal.val(res.groupIdentificator)
+
             $('#DoneId').val(res.donedById);
             $('#UserId').val(res.userId);
             $('#Description').val(res.description);
@@ -308,28 +311,22 @@
             $('#AllDay').prop('checked', res.allDay);
             $('#Completed').prop('checked', res.isDone);
             $('input:radio[name=BackgroundColor]').each(function () {
-                if ($(this).val() == res.backgroundColor) {
-                    $(this).prop('checked', true);
-                } else {
-                    $(this).prop('checked', false);
-                }
+                $(this).val() == res.backgroundColor ? $(this).prop('checked', true) : $(this).prop('checked', false)
             });
             if (res.userId != '@User.FindFirstValue(ClaimTypes.NameIdentifier)') {
-                // $('#btnSave').hide();
-                // $('#btnEdit').hide();
-                // $('#btnDelete').hide();
-                $('#schedule :input').prop('disabled', true); //или удалить их ваще??? зачем маячат выключенные перед глазами
+                $('#schedule :input').prop('disabled', true);
+                $('#btnEdit').hide();
+                $('#btnDelete').hide();
                 $('#btnClose').prop('disabled', false);
                 $('#Completed').prop('disabled', false);
             }
             else {
+                $('#btnEdit').show();
+                $('#btnDelete').show();
                 $('#schedule :input').prop('disabled', false);
                 $('#btnClose').prop('disabled', false);
             };
             $('#schedule').modal('show');
-
-            $('#btnEdit').show();
-            $('#btnDelete').show();
             $('#btnSave').hide();
             $('#Title').focus();
             $('#Completed').show();
@@ -369,24 +366,32 @@
                 data: { id: id },
                 async: false,
                 success: function (res) {
-                    if (typeof res === 'string' || res instanceof String) {
-                        alert(res);
-                    }
+                    ShowEventFulledModal(res);
+                    ShowEventComments(id);
+                    CreateComment(id);
                 },
-                false: function (errormessage) {
+                error: function (errormessage) {
                     alert(errormessage.responseText);
+                    someCalendar.refetchEvents();
                 }
             });
+        }
+
+        function isNullOrWhitespace(input) {
+            return !input || !input.trim();
         }
 
         function Add(event) {
             event.preventDefault();
             var groupVal = $('#schedule').children('.modal-dialog').children('.modal-content').find('.Group').val();
 
+            if (isNullOrWhitespace($('#Title').val()))
+                return alert("Please, write not whitespace event title");
+
             var eventdto =
-            {
+            { 
                 userId: '@User.FindFirstValue(ClaimTypes.NameIdentifier)',
-                groupIdentificator: groupVal,//$('.Group').val(),
+                groupIdentificator: groupVal === "null" ? null : groupVal,
                 title: $('#Title').val(),
                 description: $('#Description').val(),
                 start: $('#Start').val(),
@@ -396,11 +401,6 @@
                 backgroundColor: $('input[name="BackgroundColor"]:checked').val(),
             };
 
-            if (groupVal === "null") {
-                eventdto.groupIdentificator = null;
-            };
-
-
             $.ajax({
                 url: "/Event/CreateEvent",
                 data: JSON.stringify(eventdto),
@@ -408,18 +408,11 @@
                 contentType: "application/json;charset=utf-8",
                 dataType: "json",
                 success: function (result) {
-                    $('#schedule').modal('hide');
                     alert(result);
+                    $('#schedule').modal('hide');
                     someCalendar.refetchEvents();
                 },
                 error: function (errormessage) {
-                    //var data = errormessage.responseJSON;
-                    //var jsonData = JSON.parse(JSON.stringify(data));
-                    //console.log(jsonData);
-                    console.log(errormessage.responseJSON.Start[0]);
-                    //for (n1 in data) {
-                    //    console.log(n1);
-                    //}
                     alert(errormessage.responseText);
                 }
             });
@@ -427,8 +420,10 @@
 
         function Update(event) {
             event.preventDefault();
-
             var groupVal = $('#schedule').children('.modal-dialog').children('.modal-content').find('.Group').val();
+
+            if (isNullOrWhitespace($('#Title').val()))
+                return alert("Please, write not whitespace event title");
 
             var eventdto =
             {
@@ -477,12 +472,13 @@
                     contentType: "application/json;charset=utf-8",
                     dataType: "json",
                     success: function (result) {
-                        $('#schedule').modal('hide');
                         alert(result);
+                        $('#schedule').modal('hide');
                         someCalendar.refetchEvents();
                     },
                     error: function (errormessage) {
                         alert(errormessage.responseText);
+                        someCalendar.refetchEvents();
                     }
                 });
             } else {
@@ -547,7 +543,7 @@
                     <input type="hidden" class="form-control" id="UserId">
                     <div class="form-group">
                         <label for="Title"><b>Title</b></label>
-                        <input type="text" class="form-control" id="Title" placeholder="Feed the cat" required>
+                        <input type="text" class="form-control" id="Title" required> @* placeholder="Feed the cat" *@
                     </div>
                     <div class="form-group">
                         <label for="Start">Start</label>
@@ -559,7 +555,7 @@
                     </div>
                     <div class="form-group">
                         <label for="Description">Description</label>
-                        <input type="text" class="form-control" id="Description" placeholder="Food with salmon, not tomatoes"> @*maxlength*@
+                        <input type="text" class="form-control" id="Description"> @*maxlength placeholder="Food with salmon, not tomatoes"*@
                     </div>
                     <div class="form-group">
                         <label for="AllDay">All day</label>
@@ -567,7 +563,7 @@
                     </div>
                     <div class="form-group">
                         <label for="Url">Url</label>
-                        <input type="URL" class="form-control" id="Url" placeholder="https://food-for-every-cat.com">
+                        <input type="URL" class="form-control" id="Url" placeholder="http[s]://url.com"> @* placeholder="https://food-for-every-cat.com" *@
                     </div>
                     <div class="form-group">
                         <label for="BackgroundColor"><b>Priority</b></label>

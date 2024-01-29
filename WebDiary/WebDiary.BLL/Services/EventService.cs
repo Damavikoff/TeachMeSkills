@@ -103,10 +103,10 @@ namespace WebDiary.BLL.Services
         /// <summary>
         /// Create a new event
         /// </summary>
-        public async Task<ServiceResponse> CreateEventAsync(EventDTO eventModel, string authUserId)
+        public async Task<ServiceDataResponse<EventDTO>> CreateEventAsync(EventDTO eventModel, string authUserId)
         {
             if (authUserId == null)
-                return ServiceResponse.Fail("You are not authenticated!");
+                return ServiceDataResponse<EventDTO>.Fail("You are not authenticated!");
 
             try
             {
@@ -114,26 +114,26 @@ namespace WebDiary.BLL.Services
                 var obj = _mapper.Map<Event>(eventModel);
                 _webDiaryContext.Events.Add(obj);
                 await _webDiaryContext.SaveChangesAsync(); //request to DB is here => async
-
-                return ServiceResponse.Success("Event successfully created!");
+                var objDTO = _mapper.Map<EventDTO>(eventModel);
+                return ServiceDataResponse<EventDTO>.Success(objDTO);
             }
             catch (Exception ex)
             {
-                return ServiceResponse.Fail(ex.Message);
+                return ServiceDataResponse<EventDTO>.Fail(ex.Message);
             }
         }
 
         /// <summary>
         /// Update existing event 
         /// </summary>
-        public async Task<ServiceResponse> UpdateEventAsync(EventDTO eventModel, string authUserId)
+        public async Task<ServiceDataResponse<EventDTO>> UpdateEventAsync(EventDTO eventModel, string authUserId)
         {
             var obj = await _webDiaryContext.Events.AsNoTracking()
                                                    .FirstOrDefaultAsync(p => p.Id == eventModel.Id);
 
             //if (obj.UserId != authUserId)
             //{
-            //    return ServiceResponse.Fail("You can not update this event!");
+            //    return ServiceDataResponse<EventDTO>.Fail("You can not update this event!");
             //}
 
             try
@@ -177,11 +177,11 @@ namespace WebDiary.BLL.Services
                 _webDiaryContext.Events.Update(objToBd);
                 await _webDiaryContext.SaveChangesAsync();
 
-                return ServiceResponse.Success("Event successfully updated!");
+                return ServiceDataResponse<EventDTO>.Success(eventModel);
             }
             catch (Exception ex)
             {
-                return ServiceResponse.Fail(ex.Message);
+                return ServiceDataResponse<EventDTO>.Fail(ex.Message);
             }
         }
 
@@ -202,9 +202,16 @@ namespace WebDiary.BLL.Services
                 return ServiceResponse.Fail("You can not delete this event!");
             }
 
-            _webDiaryContext.Events.Remove(obj);
-            await _webDiaryContext.SaveChangesAsync();
-
+            try
+            {
+                _webDiaryContext.Events.Remove(obj);
+                await _webDiaryContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return ServiceResponse.Fail(ex.Message);
+            }
+            
             return ServiceResponse.Success("Event successfully deleted!");
         }
     }

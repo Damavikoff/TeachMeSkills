@@ -7,7 +7,7 @@ namespace WebDiary.BLL.Services.Interfaces
     {
         Task<ServiceDataResponse<List<CommentDTO>>> GetCommentsAsync(Guid eventId, string authUserId);
         Task<ServiceDataResponse<CommentDTO>> CreateCommentAsync(CommentDTO commentModel);
-        Task<ServiceResponse> UpdateCommentAsync(CommentDTO commentModel, string authUserId); //или надо отдавать объект и на фронте его добавлять?
+        Task<ServiceDataResponse<CommentDTO>> UpdateCommentAsync(CommentDTO commentModel, string authUserId); //или надо отдавать объект и на фронте его добавлять?
         Task<ServiceResponse> DeleteCommentAsync(Guid commentId, string authUserId);
     }
 }

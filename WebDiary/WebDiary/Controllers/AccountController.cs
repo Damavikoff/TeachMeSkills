@@ -28,12 +28,13 @@ namespace WebDiary.Controllers
             if (ModelState.IsValid)
             {
                 User user = new User { Email = model.Email, UserName = model.Email};
+
                 // добавляем пользователя
                 var result = await _userManager.CreateAsync(user, model.Password);
-                var addToRole = await _userManager.AddToRoleAsync(user, "user");
 
                 if (result.Succeeded)
                 {
+                    var addToRole = await _userManager.AddToRoleAsync(user, "user");
                     //// установка куки
                     //await _signInManager.SignInAsync(user, false);
                     //return RedirectToAction("Index", "Event");

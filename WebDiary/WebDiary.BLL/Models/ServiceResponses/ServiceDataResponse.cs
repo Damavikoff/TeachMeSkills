@@ -17,6 +17,7 @@
         {
             return new ServiceDataResponse<T>
             {
+                Message = "Success!",
                 Data = data,
                 Succeeded = true
             };

@@ -1,5 +1,5 @@
-﻿@model WebDiary.Models.CommentViewModel
-
+﻿@using System.Security.Claims;
+@model WebDiary.Models.CommentViewModel
 
 <div class="d-flex flex-row align-items-center p-3 form-color">
     @*mt-3 *@
@@ -19,14 +19,22 @@
 </div>
 
 <script>
+    function isNullOrWhitespace(input) {
+        return !input || !input.trim();
+    }
+
     $('#commentSave').click(function (event) { //event
         //send here from partial button Reply value "ParentCommentID". 
 
         if ($("#Content")[0].checkValidity()) {
             event.preventDefault();
 
+            if (isNullOrWhitespace($('#Content').val()))
+                return alert("Please, write not whitespace comment");
+
             var commentdto =
             {
+                userId: '@User.FindFirstValue(ClaimTypes.NameIdentifier)',
                 content: $('#Content').val(),
                 eventId: $('#EventId').val()
             };
@@ -47,7 +55,7 @@
                     $('#ParentCommentId').val(null);
                 },
                 error: function (errormessage) {
-                    console.log(errormessage.responseText);
+                    alert(errormessage.responseText);
                 }
             });
         }

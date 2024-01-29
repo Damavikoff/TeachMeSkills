@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -9,7 +10,7 @@ using WebDiary.Services.FilterAttributes;
 
 namespace WebDiary.Controllers
 {
-    
+    [Authorize(Roles = "user")]
     public class EventController : Controller //TODO: add logger
     {
         //private readonly ILogger<EventController> _logger;
@@ -33,7 +34,7 @@ namespace WebDiary.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> LoadEvents(DateTime start, DateTime end)
+        public async Task<IActionResult> LoadEvents(DateTime start, DateTime end) //LoadEventsByTime + add to interface usual LoadEvents (all)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -45,7 +46,6 @@ namespace WebDiary.Controllers
             }
 
             var objsViewModels = _mapper.Map<List<EventViewModel>>(result.Data);
-
             return Json(objsViewModels);
         }
 
@@ -58,7 +58,7 @@ namespace WebDiary.Controllers
 
             if (result.Succeeded == false)
             {
-                return Json(result.Message); //как-то поправить, мне не нравится что возвращает джсон а не что-то типа BadRequest
+                return BadRequest(result.Message); 
             }
 
             var objViewModel = _mapper.Map<EventViewModel>(result.Data);
@@ -73,7 +73,14 @@ namespace WebDiary.Controllers
 
             var objDTO = _mapper.Map<EventDTO>(eventModel);
             var result = await _eventService.CreateEventAsync(objDTO, authUserId);
-            return Json(result.Message); //возвращать объект?
+
+            if (result.Succeeded == false)
+            {
+                return BadRequest(result.Message);
+            }
+
+            //var objViewModel = _mapper.Map<EventViewModel>(result.Data);
+            return Json(result.Message); //return Ok is not refetched events
         }
 
         [HttpPost]
@@ -84,6 +91,13 @@ namespace WebDiary.Controllers
 
             var objDTO = _mapper.Map<EventDTO>(eventModel);
             var result = await _eventService.UpdateEventAsync(objDTO, authUserId);
+
+            if (result.Succeeded == false)
+            {
+                return BadRequest(result.Message);
+            }
+
+            //var objViewModel = _mapper.Map<EventViewModel>(result.Data);
             return Json(result.Message);
         }
 
@@ -94,6 +108,12 @@ namespace WebDiary.Controllers
             var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var result = await _eventService.DeleteEventAsync(id, authUserId);
+
+            if (result.Succeeded == false)
+            {
+                return BadRequest(result.Message);
+            }
+
             return Json(result.Message);
         }
     }

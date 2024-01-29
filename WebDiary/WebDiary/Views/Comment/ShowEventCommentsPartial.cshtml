@@ -25,7 +25,7 @@
                                                 }
                                             </small>
                                         </div>
-                                        <small>@commentViewModel.CreatedAt.Value.ToString("HH:mm MM/dd/yyyy")</small> @* ("dddd, dd MMMM yyyy") *@
+                                        <small>@commentViewModel.CreatedAt.Value.ToString("HH:mm MM/dd/yyyy")</small>
                                     </div>
                                     <p class="text-justify comment-text mb-0">@commentViewModel.Content</p>
                                     <div class="d-flex flex-row user-feed">
@@ -36,7 +36,7 @@
                                         }
                                         else
                                         {
-                                            <span class="commentReply"><a href="#"><small class="c-badge"><i>Reply</i></small></a></span> @*<a href=""> is not work*@
+                                            <span class="commentReply"><a href="#"><small class="c-badge"><i>Reply</i></small></a></span>
                                         }
 
                                         @if (commentViewModel.EditedAt != null)
@@ -59,11 +59,9 @@
     function databaseExists(name, callback) {
         var request = window.indexedDB.open(name);
         request.onupgradeneeded = function (e) {
-            //The upgradeneeded event is fired when an attempt was made to open a database with a version number higher than its current version.
             if (request.result.version === 1) {
                 db = e.target.result;
 
-                //You can't create an objectStore in an onsuccess method. You can only do this in a upgradeneeded event.
                 var objectstore = db.createObjectStore("comments", {
                     autoIncrement: false,
                 });
@@ -74,8 +72,8 @@
                 if (callback) callback(objectstore);
             }
         };
-        //https://stackoverflow.com/questions/52137882/indexeddb-add-record-to-objectstore-only-works-once
     }
+
     function addNewRecord(data, name) {
         var request = window.indexedDB.open(name);
         request.onsuccess = function (e) {
@@ -157,11 +155,115 @@
         })
     }
 
+    $('.commentReply').click(async function (event) {
+        var commentId = $(this)
+                .closest('.w-100') 
+                .children('.align-items-center')
+                .children('.align-items-center')
+                .find('.commentId').val();
+
+        document.getElementById('ParentCommentId').value = commentId;
+        document.getElementById('Content').focus();
+    });
+
+    showReply = (commentId) => {
+        $(".w-100").each((index, element) => {
+            if ($(element).find(".align-items-center .commentId").val() == commentId) {
+                element.scrollIntoView();
+                animate(element)
+                return false;
+            }
+        })
+    }
+
+    animate = (elem) => {
+        elem.style.border = "1px solid grey"
+        setInterval(function () {
+            elem.style.border = null
+        }, 1000);
+    }
+
+    $('.commentEdit').click(async function (event) {
+        event.preventDefault();
+
+        var name = "CommentsDB";
+        databaseExists(name, function (db) { 
+            //IF error...
+        });
+
+        var commentId = $(this)
+            .closest('.w-100')
+            .children('.align-items-center')
+            .children('.align-items-center')
+            .find('.commentId').val();
+
+        const text = $(this).parent().prev('.text-justify').text().trim();
+        
+        //from EDIT to SAVE
+        if ($(this).text() == 'Edit') { 
+            await clearDb(name); 
+
+            $(this).parent().prev('.text-justify').prop('contenteditable', true);
+            $(this).find('i').text("Save"); 
+            
+
+            $(".w-100").each((index, element) => {
+                var data = {
+                    ID: $(element).find(".align-items-center .commentId").val(),
+                    comment: $(element).children("p").text()
+                };
+                addNewRecord(data, name);
+            });
+        }
+
+        //from SAVE to EDIT
+        else { 
+            const currentCommentText = await getComment(commentId, name);
+            
+            //if changed comment is empty
+            if (!text) {
+                $(this).parent().prev('.text-justify').text(currentCommentText);
+                $(this).parent().prev('.text-justify').prop('contenteditable', false);
+                $(this).find('i').text("Edit");
+            }
+            else if (currentCommentText !== text) {
+                $(this).parent().prev('.text-justify').prop('contenteditable', false);
+                $(this).find('i').text("Edit");
+
+                var content = {
+                    userId: '@User.FindFirstValue(ClaimTypes.NameIdentifier)',
+                    ID: commentId, 
+                    content: $(this).parent().prev('.text-justify').text()
+                }
+                
+                $.ajax({
+                    url: "/Comment/UpdateComment",
+                    data: JSON.stringify(content),
+                    type: "PATCH",
+                    contentType: "application/json;charset=utf-8",
+                    dataType: "html",
+                    success: function (data) {
+                        console.log(data);
+                    },
+                    error: function (errormessage) {
+                        alert(errormessage.responseText);
+                        //TODO: comment.revert();
+                    }
+                });
+            }
+            //if changed comment is same
+            else {
+                $(this).parent().prev('.text-justify').prop('contenteditable', false);
+                $(this).find('i').text("Edit");
+            }
+        }
+    });
+
     $('.commentDelete').click(function (event) {
         event.preventDefault();
 
         var commentId = $(this)
-            .closest('.w-100') // goes up in the tree until .w-100
+            .closest('.w-100')
             .children('.align-items-center')
             .children('.align-items-center')
             .find('.commentId').val();
@@ -188,115 +290,8 @@
                 $('#show-event-comments-partial').html(data);
             },
             error: function (errormessage) {
-                console.log(errormessage.responseText);
+                alert(errormessage.responseText);
             }
         });
-    });
-
-    $('.commentReply').click(async function (event) {
-        var commentId = $(this)
-                .closest('.w-100') // goes up in the tree until .w-100
-                .children('.align-items-center')
-                .children('.align-items-center')
-                .find('.commentId').val();
-
-        document.getElementById('ParentCommentId').value = commentId;
-        document.getElementById('Content').focus();
-    });
-
-    showReply = (commentId) => {
-        $(".w-100").each((index, element) => {
-            if ($(element).find(".align-items-center .commentId").val() == commentId) {
-                element.scrollIntoView();
-                //$(element).goTo();
-                animate(element)
-                return false;
-            }
-        })
-    }
-
-    animate = (elem) => {
-        elem.style.border = "1px solid grey"
-        setInterval(function () {
-            elem.style.border = null
-        }, 1000);
-    }
-
-    $('.commentEdit').click(async function (event) {
-        event.preventDefault();
-
-        var name = "CommentsDB";
-        databaseExists(name, function (db) { 
-            //IF error...
-        });
-
-        var commentId = $(this)
-            .closest('.w-100') // goes up in the tree until .w-100
-            .children('.align-items-center')
-            .children('.align-items-center')
-            .find('.commentId').val();
-
-        const text = $(this).parent().prev('.text-justify').text().trim();
-        
-        //from EDIT to SAVE
-        if ($(this).text() == 'Edit') { 
-            await clearDb(name); 
-
-            $(this).parent().prev('.text-justify').prop('contenteditable', true);
-            //$(this).text("Save"); //FIX: this resetting tags <small> and <i>
-            //https://stackoverflow.com/questions/5637969/is-an-empty-href-valid
-            //$(this).wrapInner('<small class="c-badge"><i><a href="#"></a></i></small>');
-            $(this).find('i').text("Save"); 
-            
-
-            $(".w-100").each((index, element) => {
-                var data = {
-                    ID: $(element).find(".align-items-center .commentId").val(),
-                    comment: $(element).children("p").text()
-                };
-                addNewRecord(data, name);
-            });
-        }
-
-        //from SAVE to EDIT
-        else { 
-            const currentCommentText = await getComment(commentId, name);
-            
-            //if changed comment is empty
-            if (!text) {
-                $(this).parent().prev('.text-justify').text(currentCommentText);
-                $(this).parent().prev('.text-justify').prop('contenteditable', false);
-                $(this).find('i').text("Edit");
-            }
-            else if (currentCommentText !== text) {
-                //$(this).parent().prev('.text-justify').removeAttr('contenteditable');
-                $(this).parent().prev('.text-justify').prop('contenteditable', false);
-                $(this).find('i').text("Edit");
-
-                var content = {
-                    ID: commentId, 
-                    content: $(this).parent().prev('.text-justify').text()
-                }
-                
-                $.ajax({
-                    url: "/Comment/UpdateComment",
-                    data: JSON.stringify(content),
-                    type: "PATCH",
-                    contentType: "application/json;charset=utf-8",
-                    dataType: "html",
-                    success: function (data) {
-                        //TODO: add result.Message after email
-                    },
-                    error: function (errormessage) {
-                        console.log(errormessage.responseText);
-                    }
-                });
-            }
-            //if changed comment is same
-            else {
-                $(this).parent().prev('.text-justify').prop('contenteditable', false);
-                $(this).find('i').text("Edit");
-            }
-        }
     });
 </script> 

@@ -5,7 +5,7 @@ using WebDiary.Models;
 
 namespace WebDiary.Controllers
 {
-    public class UserController : Controller
+    public class UserController : Controller //TODO: add friend list
     {
         private readonly IMapper _mapper;
         private readonly IUserService _userService;
