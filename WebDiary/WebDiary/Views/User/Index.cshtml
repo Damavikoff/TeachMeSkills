@@ -1,0 +1,4 @@
+﻿@using System.Security.Claims;
+
+<a class="btn btn-sm btn-primary" asp-controller="User" asp-action="Edit" asp-route-id="@User.FindFirstValue(ClaimTypes.NameIdentifier)">Редактировать</a>
+<a class="btn btn-sm btn-primary" asp-controller="User" asp-action="ChangePassword" asp-route-id="@User.FindFirstValue(ClaimTypes.NameIdentifier)">Сменить пароль</a>

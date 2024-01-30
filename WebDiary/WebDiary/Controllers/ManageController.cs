@@ -1,33 +1,25 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using WebDiary.BLL.Services.Interfaces;
 using WebDiary.DAL.Models;
 using WebDiary.Models;
 
 namespace WebDiary.Controllers
 {
-    public class UserController : Controller //TODO: add friend list
+    public class ManageController : Controller
     {
-        private readonly IMapper _mapper;
-        private readonly IUserService _userService;
         private readonly UserManager<User> _userManager;
-        public UserController(IUserService userService, IMapper mapper, UserManager<User> userManager)
-        {
-            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _userManager = userManager;
-        }
-        [HttpPost]
-        public async Task<IActionResult> SearchUser(string search) 
-        {
-            var result = await _userService.GetUsersAsync(search);
-            var objsViewModels = _mapper.Map<List<UserViewModel>>(result.Data);
-            return Ok(objsViewModels);
-        }
+        private readonly SignInManager<User> _signInManager;
 
-        public IActionResult Index() => View(_userManager.Users.FirstOrDefault(i => i.Id == User.FindFirstValue(ClaimTypes.NameIdentifier)));
+        public ManageController(UserManager<User> userManager, SignInManager<User> signInManager)
+        {
+            _userManager = userManager;
+            _signInManager = signInManager;
+        }
+        
+
+        public IActionResult Index() => View(_userManager.Users.ToList());
 
         public async Task<IActionResult> Edit(string id)
         {
@@ -66,6 +58,17 @@ namespace WebDiary.Controllers
                 }
             }
             return View(model);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Delete(string id)
+        {
+            User user = await _userManager.FindByIdAsync(id);
+            if (user != null)
+            {
+                IdentityResult result = await _userManager.DeleteAsync(user);
+            }
+            return RedirectToAction("Index");
         }
 
         public async Task<IActionResult> ChangePassword(string id)

@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using WebDiary.BLL.Services.Interfaces;
 using WebDiary.DAL.Models;
 using WebDiary.Models;
 
@@ -11,11 +13,24 @@ namespace WebDiary.Controllers
     {
         RoleManager<IdentityRole> _roleManager;
         UserManager<User> _userManager;
-        public RolesController(RoleManager<IdentityRole> roleManager, UserManager<User> userManager)
+        private readonly IUserService _userService;
+        private readonly IMapper _mapper;
+
+        public RolesController(RoleManager<IdentityRole> roleManager, UserManager<User> userManager, IUserService userService, IMapper mapper)
         {
             _roleManager = roleManager;
             _userManager = userManager;
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
+        [HttpPost]
+        public async Task<IActionResult> SearchUser(string search)
+        {
+            var result = await _userService.GetUsersAsync(search);
+            var objsViewModels = _mapper.Map<List<UserViewModel>>(result.Data);
+            return Ok(objsViewModels);
+        }
+
         public IActionResult Index() => View(_roleManager.Roles.ToList());
 
         public IActionResult Create() => View();
@@ -96,7 +111,6 @@ namespace WebDiary.Controllers
 
                 return RedirectToAction("UserList");
             }
-
             return NotFound();
         }
     }

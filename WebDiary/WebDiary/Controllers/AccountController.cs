@@ -27,7 +27,11 @@ namespace WebDiary.Controllers
         {
             if (ModelState.IsValid)
             {
-                User user = new User { Email = model.Email, UserName = model.Email};
+                var name = model.Email;
+                //char ch = '@';
+                //name = name.Substring(0, name.IndexOf(ch));
+
+                User user = new User { Email = model.Email, UserName = name};
 
                 // добавляем пользователя
                 var result = await _userManager.CreateAsync(user, model.Password);

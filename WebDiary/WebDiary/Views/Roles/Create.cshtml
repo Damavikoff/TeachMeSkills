@@ -2,10 +2,17 @@
 
 <div asp-validation-summary="All" class="text-danger"></div>
 
-<form asp-action="Create" method="post">
-    <div class="form-group">
-        <label for="name">Новая роль</label>
-        <input name="name" class="form-control" />
+<h2>Новая роль</h2>
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create" method="post">
+            <div class="form-group">
+                <label for="name"></label>
+                <input name="name" class="form-control" />
+                <label></label>
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary">Добавить</button>
+            <a class="btn btn-sm btn-primary" asp-action="Index">Назад</a>
+        </form>
     </div>
-    <button type="submit" class="btn btn-primary">Добавить</button>
-</form>
+</div>
