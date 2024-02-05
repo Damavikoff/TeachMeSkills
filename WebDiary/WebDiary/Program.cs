@@ -12,14 +12,12 @@ builder.Services.AddDbContext<WebDiaryContext>(options => options.UseSqlServer(b
 builder.Services.AddIdentity<User, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
  .AddEntityFrameworkStores<WebDiaryContext>()
  .AddDefaultTokenProviders();
-//builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
-// .AddEntityFrameworkStores<WebDiaryContext>();
-
 
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IFriendsService, FriendsService>();
 
 builder.Services.AddAutoMapper(typeof(EventDTOMappingProfile), typeof(EventViewModelMappingProfile));
 

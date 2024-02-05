@@ -17,7 +17,6 @@ namespace WebDiary.BLL.Services
             _webDiaryContext = webDiaryContext ?? throw new ArgumentNullException(nameof(webDiaryContext));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
-
         
         /// <summary>
         /// Loading all comments of an event

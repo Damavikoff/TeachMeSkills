@@ -29,7 +29,7 @@ namespace WebDiary.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ShowUserGroupsDropDownPartial() //to group controller
+        public async Task<IActionResult> ShowUserGroupsDropDownPartial() 
         {
             var result = await _groupService.ShowUserGroups(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var objsViewModels = _mapper.Map<List<GroupViewModel>>(result.Data);
@@ -45,7 +45,7 @@ namespace WebDiary.Controllers
 
             if (result.Succeeded == false)
             {
-                return Json(result.Message); //как-то поправить, мне не нравится что возвращает джсон а не что-то типа BadRequest
+                return Json(result.Message); 
             }
 
             var objViewModel = _mapper.Map<GroupViewModel>(result.Data);
@@ -74,7 +74,6 @@ namespace WebDiary.Controllers
         [GroupValidationFilter]
         public async Task<IActionResult> UpdateGroup([FromBody] GroupViewModel groupModel)
         {
-            //here i get userId. And i have userId in groupModel (for validate in Groupservice?)
             var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var objDTO = _mapper.Map<GroupDTO>(groupModel);

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 
 namespace WebDiary.DAL.Models;
 
@@ -14,6 +13,7 @@ public partial class WebDiaryContext : IdentityDbContext<User>
     public virtual DbSet<Event> Events { get; set; }
     public virtual DbSet<Group> Groups { get; set; }
     public virtual DbSet<Comment> Comments { get; set; }
+    public virtual DbSet<Friends> Friends { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Event>(entity =>
@@ -71,6 +71,23 @@ public partial class WebDiaryContext : IdentityDbContext<User>
         .HasOne(p => p.Event).WithMany(b => b.Comments)
         .HasForeignKey(p => p.EventId)
         .OnDelete(deleteBehavior: DeleteBehavior.ClientCascade); //!
+
+        modelBuilder.Entity<Friends>()
+               .HasKey(t => new { t.UserId, t.FriendId });
+
+        modelBuilder.Entity<Friends>()
+        .HasOne(e => e.User)
+        .WithMany(e => e.UserFriends)
+        .HasForeignKey(e => e.UserId)
+        .IsRequired();
+
+        modelBuilder.Entity<Friends>()
+        .HasOne(e => e.Friend)
+        .WithMany(e => e.FriendlyUsers)
+        .HasForeignKey(e => e.FriendId)
+        .OnDelete(deleteBehavior: DeleteBehavior.NoAction) 
+        .IsRequired();
+
 
         base.OnModelCreating(modelBuilder);
         OnModelCreatingPartial(modelBuilder);

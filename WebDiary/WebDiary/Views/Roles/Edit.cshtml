@@ -1,7 +1,10 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @model ChangeRoleViewModel
+@{
+    ViewBag.Title = "Edit user role";
+}
 
-<h2>Изменение ролей для пользователя @Model.UserEmail</h2>
+<h2>Change role for @Model.UserEmail</h2>
 
 <form asp-action="Edit" method="post">
     <input type="hidden" name="userId" value="@Model.UserId" />
@@ -13,9 +16,9 @@
 
             @role.Name <br />
         }
+        <label></label>
     </div>
 
-    <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
-    <a class="btn btn-sm btn-primary" asp-action="UserList">Назад</a>
+    <button type="submit" class="btn btn-sm btn-success">Save</button>
+    <a class="btn btn-sm btn-primary" asp-controller="Manage" asp-action="Index">Back</a>
 </form>
-

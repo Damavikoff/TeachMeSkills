@@ -1,4 +1,5 @@
 ﻿@using System.Security.Claims;
 
-<a class="btn btn-sm btn-primary" asp-controller="User" asp-action="Edit" asp-route-id="@User.FindFirstValue(ClaimTypes.NameIdentifier)">Редактировать</a>
-<a class="btn btn-sm btn-primary" asp-controller="User" asp-action="ChangePassword" asp-route-id="@User.FindFirstValue(ClaimTypes.NameIdentifier)">Сменить пароль</a>
+@await Html.PartialAsync("Edit", new EditUserViewModel(){Id=Model.Id,Email=Model.Email})
+<br />
+@await Html.PartialAsync("ChangePassword", new EditUserViewModel() { Id = Model.Id, Email = Model.Email})

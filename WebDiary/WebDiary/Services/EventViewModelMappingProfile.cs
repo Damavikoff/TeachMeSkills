@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using WebDiary.Models;
 using WebDiary.BLL.Models;
+using WebDiary.Models;
 
 namespace WebDiary.Services
 {
@@ -10,6 +10,9 @@ namespace WebDiary.Services
         {
             CreateMap<UserViewModel, UserDTO>();
             CreateMap<UserDTO, UserViewModel>();
+
+            CreateMap<EditUserViewModel, UserDTO>();
+            CreateMap<UserDTO, EditUserViewModel>();
 
             CreateMap<GroupViewModel, GroupDTO>();
             CreateMap<GroupDTO, GroupViewModel>();
@@ -22,6 +25,10 @@ namespace WebDiary.Services
             CreateMap<CommentDTO, CommentViewModel>()
                 .ForMember(d => d.Email, o => o.MapFrom(s => s.User.Email))
                 .ForMember(d => d.ParentCommentEmail, o => o.MapFrom(s => s.ParentComment.User.Email));
+
+            CreateMap<FriendsViewModel, FriendsDTO>();
+            CreateMap<FriendsDTO, FriendsViewModel>()
+                .ForMember(d => d.FriendUserName, o => o.MapFrom(s => s.Friend.UserName));
         }
     }
 }

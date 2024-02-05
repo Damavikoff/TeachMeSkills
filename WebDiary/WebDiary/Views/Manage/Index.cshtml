@@ -1,1 +1,85 @@
-﻿<a class="btn btn-sm btn-primary" asp-controller="Roles" asp-action="UserList">Назад</a>
+﻿@model IEnumerable<UserViewModel> 
+@{
+    ViewBag.Title = "Admin panel";
+}
+
+<h2>User list</h2>
+<form>
+    <p>
+        <div class="form-group">
+            <table>
+                <tr>
+                    <td>
+                        <label for="UserEmail"><b>Search user</b></label>
+                        <input type="text" id="myInput3" oninput="GetSearch()" class="form-control">
+                        <div id="myDropdown3" class="dropdown-content"></div>
+                    </td>
+                    <td>
+                        <label for="UserEmail"><i></i></label>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </p>
+</form>
+
+<a asp-action="Create" class="btn btn-sm btn-success">Create user</a>
+
+<table class="table" id="users">
+    <th><b>Email</b></th>
+    <th><b>UserName</b></th>
+    <th></th>
+    @foreach (var user in Model)
+    {
+        <tr>
+            <td>@user.Email</td>
+            <td>@user.UserName</td>
+            <td>
+                <form asp-action="Delete" asp-route-id="@user.Id" method="post">
+                    <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-id="@user.Id">Edit</a>
+                    <a class="btn btn-sm btn-primary" asp-action="ChangePassword" asp-route-id="@user.Id">Change password</a>
+                    <a class="btn btn-sm btn-success" asp-controller="Roles" asp-action="Edit" asp-route-userid="@user.Id">Access rights</a>
+                    <button type="submit" class="btn btn-sm btn-danger">
+                        Delete
+                    </button>
+                </form>
+            </td>
+        </tr>
+    }
+</table>
+<a asp-controller="Roles" asp-action="Index" class="btn btn-sm btn-primary">Roles list</a>
+
+<script>
+    document.addEventListener("click", function (e) {
+        $('#myDropdown3').html("");
+    });
+
+    function GetSearch() { 
+        if ($("#myInput3").val().length > 2) {
+            $.ajax({
+                type: "POST",
+                url: "/User/SearchUser",
+                data: { search: $("#myInput3").val() },
+                success: function (data) {
+                    $('#myDropdown3').html("");
+                    if (data.length === 0) {
+                        $('#myDropdown3').append("<a>" + "No users founded!" + "</a>");
+                    }
+                    else {
+                        $("#users tr").remove();
+                        $('#users tbody').append('<tr><th><b>Email</b></th><th><b>UserName</b></th><th></th><td></tr>')
+
+                        data.forEach(function (element) {
+                            $('#users tbody').append('<tr><td>' + element.email
+                                + '</td><td>' + element.userName + '</td><td><form action="Manage/Delete?id='+element.id 
+                                +'"method="post"><a class="btn btn-sm btn-primary" href="Manage/Edit?id='+element.id 
+                                +'">Редактировать</a><a class="btn btn-sm btn-primary" href="Manage/ChangePassword?id=' + element.id
+                                + '">Сменить пароль</a><a class="btn btn-sm btn-success" href="Roles/Edit?userid=' + element.id
+                                + '">Права доступа</a><button type="submit" class="btn btn-sm btn-danger">Удалить</button></form></td></tr>')
+                        });
+                    }
+                }
+            });
+        }
+    }
+</script>

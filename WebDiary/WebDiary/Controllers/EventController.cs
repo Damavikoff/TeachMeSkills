@@ -40,10 +40,10 @@ namespace WebDiary.Controllers
 
             var result = await _eventService.LoadEventsAsync(start, end, userId);
 
-            if (result.Succeeded == false)
-            {
-                return Json(result);
-            }
+            //if (result.Succeeded == false) rawevents is not iterable
+            //{
+            //    return Json(result);
+            //}
 
             var objsViewModels = _mapper.Map<List<EventViewModel>>(result.Data);
             return Json(objsViewModels);

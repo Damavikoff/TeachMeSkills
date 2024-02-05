@@ -1,7 +1,5 @@
 ﻿@model EditUserViewModel
-@{
-    ViewBag.Title = "Редактирование пользователя";
-}
+
 <form asp-action="Edit" asp-controller="User">
     <div asp-validation-summary="All" class="text-danger"></div>
     <div class="form-group">
@@ -14,6 +12,7 @@
         <input type="text" asp-for="UserName" class="form-control" />
     </div>
     <div class="form-group">
-        <input type="submit" value="Сохранить" class="btn btn-outline-secondary" />
+            <input type="submit" value="Save" class="btn btn-sm btn-success" />
+            <a class="btn btn-sm btn-primary" asp-action="Index">Back</a>
     </div>
 </form>

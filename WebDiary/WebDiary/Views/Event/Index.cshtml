@@ -13,19 +13,6 @@
         let isDone = false;
 
         document.addEventListener('DOMContentLoaded', function () {
-
-            //var Draggable = FullCalendar.Draggable;
-
-            // var containerEll = document.getElementById("kt_docs_fullcalendar_events_list");
-            // var Draggable = new FullCalendar.Draggable(containerEll, {
-            //     itemSelector: ".fc-event",
-            //     eventData: function (eventEl) {
-            //         return {
-            //             title: eventEl.innerText.trim()
-            //         }
-            //     }
-            // });
-
             var calendarEl = document.getElementById('calendar');
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
@@ -103,25 +90,8 @@
                         }
                     }
                 },
-                //TODO: function(){} if null, then load message "no events" and 'events: []'. Events function already async
-                //https://stackoverflow.com/questions/62618806/error-error-uncaught-in-promise-typeerror-this-products-is-not-iterable-b
                 events: '/Event/LoadEvents',
-                // {
-                //     url: '/Event/LoadEvents',
-                //     method: 'GET',
-                //     extraParams: {
-                //         custom_param1: 'something',
-                //         custom_param2: 'somethingelse'
-                //     },
-                //     success: function(res) {
-                //         //debugger;
-                //         res.forEach((element) => res.el.style
-                //     },
-                //     failure: function () {
-                //         alert('There was an error while fetching events!'); //error message from controller
-                //     }
-                // },
-
+                
                 eventClick: function (info) {
                     info.jsEvent.preventDefault(); // don't let the browser navigate
                     GetEventDetails(info.event.id);
@@ -164,7 +134,7 @@
                         title: info.event.title,
                         description: info.event.extendedProps.description,
                         start: moment(info.event.start).format('YYYY-MM-DDTHH:mm'),
-                        end: moment(info.event.end).format('YYYY-MM-DDTHH:mm'),//info.event.endStr,
+                        end: moment(info.event.end).format('YYYY-MM-DDTHH:mm'),
                         allDay: info.event.allDay,
                         url: info.event.url,
                         backgroundColor: info.event.backgroundColor,
@@ -185,9 +155,7 @@
                             alert(errormessage.responseText);
                             info.revert();
                         }
-                    // }).done(function () {
-                    //     alert('Updated');
-                    }); //if not done info.revert();
+                    }); 
                 },
                 eventResize: function (info) {
                     var eventdto =
@@ -219,8 +187,6 @@
                             alert(errormessage.responseText);
                             info.revert();
                         }
-                    // }).done(function () {
-                    //     alert('Updated'); //if not done info.revert();
                     });
                 }
             });
@@ -487,34 +453,6 @@
         }
     </script>
 }
-@* 
-<h4 class="mb-3">Draggable Events</h4>
-<div id="external-events-list" class="d-flex flex-wrap">
-    <div class="fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event badge me-3 my-1">
-        <div class="fc-event-main">Event 1</div>
-    </div>
-    <div class="fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event badge me-3 my-1">
-        <div class="fc-event-main">Event 2</div>
-    </div>
-    <div class="fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event badge me-3 my-1">
-        <div class="fc-event-main">Event 3</div>
-    </div>
-    <div class="fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event badge me-3 my-1">
-        <div class="fc-event-main">Event 4</div>
-    </div>
-    <div class="fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event badge me-3 my-1">
-        <div class="fc-event-main">Event 5</div>
-    </div>
-</div>
-<div class="mt-2 my-5">
-    <div class="form-check form-check-custom form-check-solid">
-        <input class="form-check-input" type="checkbox" value="" id="drop-remove" />
-        <label class="form-check-label" for="drop-remove">
-            Remove event after drop
-        </label>
-    </div>
-</div> *@
-
 <div id='calendar'></div>
 
 <div class="modal fade" id="schedule">

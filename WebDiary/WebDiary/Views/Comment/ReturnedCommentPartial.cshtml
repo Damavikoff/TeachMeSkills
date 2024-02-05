@@ -1,8 +1,6 @@
 ﻿@using System.Security.Claims;
 @model CommentViewModel
 
-@*если список комментов пуст, то....*@
-
 <div class="d-flex flex-row p-3">
     @* <img src="https://i.imgur.com/zQZSWrt.jpg" width="40" height="40" class="rounded-circle mr-3">*@
     <div class="w-100">
@@ -34,9 +32,6 @@
     </div>
 </div>
 
-<script>
-    
-</script>
 <script>
     var db;
     function databaseExists(name, callback) { //if db not exist

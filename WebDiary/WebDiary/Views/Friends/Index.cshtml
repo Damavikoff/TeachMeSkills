@@ -1,0 +1,116 @@
+﻿@using System.Security.Claims;
+@model List<FriendsViewModel>
+@{
+    ViewBag.Title = "Friend list";
+}
+
+<h2>Friend list</h2>
+<table class="table" id="friends">
+    <th><input type="hidden" value="1"></th>
+    <th><b>UserName</b></th>
+    <th></th>
+    @foreach (var role in Model)
+    {
+        <tr> @* data-value="@role.FriendId" *@
+            <td><input type="hidden" class="form-control" class="friendId" value="@role.FriendId"></td>
+            <td><div class="friend">@role.FriendUserName</div></td>
+            <td>
+                <a class="btn btn-sm btn-danger" asp-controller="Friends" asp-action="DeleteFriend" asp-route-id="@role.FriendId">Delete</a> @*  *@
+            </td>
+        </tr>
+    }
+</table>
+<form>
+    <p>
+        <div class="form-group">
+            <table>
+                <tr>
+                    <td>
+                        <label for="UserEmail"><b>Add friend</b></label>
+                        <input type="text" id="myInput2" oninput="GetSearch()" class="form-control">
+                        <div id="myDropdown2" class="dropdown-content"></div>
+                    </td>
+                    <td>
+                        <label for="UserEmail"><i></i></label>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </p>
+</form>
+
+ <script>
+    //array for already added friends
+    var arrFriends = new Array();
+    
+    //get already added friends
+    $(document).ready(function () {
+        var table = document.getElementById("friends");
+        for (var i = 0, row; row = table.rows[i]; i++) {
+            arrFriends.push(row.cells[0].firstChild.value);
+            //change for TR value?
+        } 
+    });
+
+    document.addEventListener("click", function (e) {
+        $('#myDropdown2').html("");
+    });
+
+    //add user from dropdown search
+    $("#myDropdown2").on("click", ".user", function (evt) {
+        var friendId = this.getAttribute("value");
+        AddFriend(friendId);
+    });
+
+    function AddFriend(friendId) {
+        var friends = {
+            userId: '@User.FindFirstValue(ClaimTypes.NameIdentifier)',
+            friendId: friendId
+        }
+
+        $.ajax({
+            type: "POST",
+            url: "/Friends/AddFriend",
+            data: JSON.stringify(friends),
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                //create new row
+                if (arrFriends.length > 0) {
+                    $('#friends').append('<tr><td><input type="hidden" class="form-control" value="' + data.friendId + '"</td><td><div class="friend">' + data.friendUserName + '</div></td><td><a class="btn btn-sm btn-danger" href="/Friends/DeleteFriend?id=' + data.friendId + '">' + 'Удалить' + '</a></td></tr>');
+                }
+                else {
+                    $('#friends').append('<tbody><tr><td><input type="hidden" class="form-control" value="' + data.friendId + '"</td><td><div class="friend">' + data.friendUserName + '</div></td><td><a class="btn btn-sm btn-danger" href="/Friends/DeleteFriend?id=' + data.friendId + '">' + 'Удалить' + '</a></td></tr></tbody>');
+                }
+                $('#myInput2').val("");
+                $('#myDropdown2').html("");
+                //add newly added user to array
+                arrFriends.push(friendId);
+            }
+        });
+    }
+
+    function GetSearch() { //trigger on 3 letters
+        if ($("#myInput2").val().length > 2) {
+            $.ajax({
+                type: "POST",
+                url: "/User/SearchUser",
+                data: { search: $("#myInput2").val() },
+                success: function (data) {
+                    $('#myDropdown2').html("");
+                    if (data.length === 0) {
+                        $('#myDropdown2').append("<a>" + "No users founded!" + "</a>");
+                    }
+                    else {
+                        data.forEach(function (element) {
+                            var userid = '@User.FindFirstValue(ClaimTypes.NameIdentifier)';
+                            if ((element.id !== userid) && (!(arrFriends.find(e => e === element.id)))) {
+                                $('#myDropdown2').append("<a value=" + element.id + " class=" + "user" + ">" + element.userName + "</a>");
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+ </script>

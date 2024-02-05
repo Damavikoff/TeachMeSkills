@@ -1,35 +1,69 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WebDiary.BLL.Models;
 using WebDiary.BLL.Services.Interfaces;
-using WebDiary.DAL.Models;
 using WebDiary.Models;
 
 namespace WebDiary.Controllers
 {
+    //admin panel 
+    [Authorize(Roles = "admin")]
     public class ManageController : Controller
     {
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
+        private readonly IMapper _mapper;
+        private readonly IUserService _userService;
 
-        public ManageController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public ManageController(IUserService userService, IMapper mapper)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
-        
 
-        public IActionResult Index() => View(_userManager.Users.ToList());
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var objs = await _userService.GetUsersAsync();
+            var objsViewModel = _mapper.Map<List<UserViewModel>>(objs.Data);
+            return View(objsViewModel);
+        }
 
+        [HttpGet]
+        public IActionResult Create() => View();
+
+        [HttpPost]
+        public async Task<IActionResult> Create(CreateUserViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                //var obj = _mapper.Map<UserDTO>(model);
+                var result = await _userService.CreateUserAsync(model.Email, model.Password);
+
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    return Json(result.Message);
+                }
+            }
+            return View(model);
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Edit(string id)
         {
-            User user = await _userManager.FindByIdAsync(id);
-            if (user == null)
+            var result = await _userService.GetUserByIdAsync(id);
+            if (result.Succeeded)
             {
-                return NotFound();
+                EditUserViewModel model = new EditUserViewModel { Id = result.Data.Id, Email = result.Data.Email };
+                return View(model);
             }
-            EditUserViewModel model = new EditUserViewModel { Id = user.Id, Email = user.Email, UserName = user.UserName };
-            return View(model);
+            else
+            {
+                return Json(result.Message);
+            }
         }
 
         [HttpPost]
@@ -37,24 +71,16 @@ namespace WebDiary.Controllers
         {
             if (ModelState.IsValid)
             {
-                User user = await _userManager.FindByIdAsync(model.Id);
-                if (user != null)
-                {
-                    user.Email = model.Email;
-                    user.UserName = model.UserName;
+                var objDto = _mapper.Map<UserDTO>(model);
+                var result = await _userService.ChangeUserNameAsync(objDto);
 
-                    var result = await _userManager.UpdateAsync(user);
-                    if (result.Succeeded)
-                    {
-                        return RedirectToAction("Index");
-                    }
-                    else
-                    {
-                        foreach (var error in result.Errors)
-                        {
-                            ModelState.AddModelError(string.Empty, error.Description);
-                        }
-                    }
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    return Json(result.Message);
                 }
             }
             return View(model);
@@ -63,60 +89,51 @@ namespace WebDiary.Controllers
         [HttpPost]
         public async Task<ActionResult> Delete(string id)
         {
-            User user = await _userManager.FindByIdAsync(id);
-            if (user != null)
+            var result = await _userService.DeleteUserAsync(id);
+
+            if (result.Succeeded)
             {
-                IdentityResult result = await _userManager.DeleteAsync(user);
+                return RedirectToAction("Index");
             }
-            return RedirectToAction("Index");
+            else
+            {
+                return Json(result.Message);
+            }
         }
 
+        [HttpGet]
         public async Task<IActionResult> ChangePassword(string id)
         {
-            User user = await _userManager.FindByIdAsync(id);
-            if (user == null)
+            var result = await _userService.GetUserByIdAsync(id);
+
+            if (result.Succeeded)
+            {
+                EditUserViewModel model = new EditUserViewModel { Id = result.Data.Id, Email = result.Data.Email };
+                return View(model);
+            }
+            else
             {
                 return NotFound();
             }
-            EditUserViewModel model = new EditUserViewModel { Id = user.Id, Email = user.Email };
-            return View(model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> ChangePassword(EditUserViewModel model)
+        public async Task<IActionResult> ChangePassword(EditUserViewModel userModel)
         {
+            var test = HttpContext;
             if (ModelState.IsValid)
             {
-                User user = await _userManager.FindByIdAsync(model.Id);
-                if (user != null)
+                var result = await _userService.ChangeUserPasswordAsync(userModel.Id, userModel.NewPassword, test);
+                if (result.Succeeded)
                 {
-                    var _passwordValidator =
-                        HttpContext.RequestServices.GetService(typeof(IPasswordValidator<User>)) as IPasswordValidator<User>;
-                    var _passwordHasher =
-                        HttpContext.RequestServices.GetService(typeof(IPasswordHasher<User>)) as IPasswordHasher<User>;
-
-                    IdentityResult result =
-                        await _passwordValidator.ValidateAsync(_userManager, user, model.NewPassword);
-                    if (result.Succeeded)
-                    {
-                        user.PasswordHash = _passwordHasher.HashPassword(user, model.NewPassword);
-                        await _userManager.UpdateAsync(user);
-                        return RedirectToAction("Index");
-                    }
-                    else
-                    {
-                        foreach (var error in result.Errors)
-                        {
-                            ModelState.AddModelError(string.Empty, error.Description);
-                        }
-                    }
+                    return RedirectToAction("Index");
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Пользователь не найден");
+                    return Json(result.Message);
                 }
             }
-            return View(model);
+            return View(userModel);
         }
     }
 }

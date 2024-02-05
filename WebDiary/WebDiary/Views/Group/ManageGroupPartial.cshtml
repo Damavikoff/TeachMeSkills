@@ -1,8 +1,6 @@
 ﻿@using System.Security.Claims;
 @model WebDiary.Models.GroupViewModel
 
-@* https://stackoverflow.com/questions/60633022/how-can-i-render-partial-view-as-modal-popup-on-button-click *@
-
 <div class="modal fade" id="ManageGroupModal">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -64,7 +62,10 @@
         return !input || !input.trim();
     }
 
+    //array with searched users
     var arrUsersSearch = new Array();
+
+    //array for add users to group
     var arrUsersToAdd = new Array();
 
     $('#btnCloseAdd').click(function () {
@@ -89,21 +90,29 @@
         }
     });
 
+    //on change group selector
     $('.group-selector-partial2').change(function () {
+        //clear all inputs
         $('#Name').val("");
         $('#GroupId').val("");
         $('#UserGroupId').val("");
         $('#users').empty(); 
         
+        //select choosen group
         var selectedGroupId = $(this).find('.Group').val();
         
+        //if not "None"
         if (selectedGroupId != "null") {
             arrUsersToAdd = [];
             $('#btnEditGroup').show();
             $('#btnDeleteGroup').show();
             $('#btnSaveGroup').hide();
             $('#title').text("Edit group");
+
+            //get selected group
             var selectedGroup = GetGroup(selectedGroupId);
+
+            //fill modal by selected group
             FillGroupModal(selectedGroup.responseJSON);
         }
         else {
@@ -117,20 +126,24 @@
         }
     });
 
+    //add user from dropdown to array with added users (arrUsersToAdd)
     $("#myDropdown").on("click", ".user", function (evt) {
         var arrUserId = this.getAttribute("value");
         var arrUserName = $(this).text();
 
+        //add to arrUsersToAdd choosen user
         arrUsersSearch.forEach(function (elem) {
             if (elem.id === arrUserId) {
                 arrUsersToAdd.push(elem);
             }
         });
 
+        //add to select choosen user
         $('#users').append("<option value=" + arrUserId + " class=selUser>" + arrUserName + "</option>");
         $('#myInput').val("");
     });
 
+    //delete clicked user from select of choosed users
     $("#users").on("click", ".selUser", function (evt) {
         let idDel = $(this).val();
         let objDel = arrUsersToAdd.findIndex(x => x.id === idDel);
@@ -138,27 +151,35 @@
         $(this).remove();
     });
 
+    //clear dropdown when whetever click at document
     document.addEventListener("click", function (e) {
         $('#myDropdown').html("");
     });
 
+    //find user by input
     function GetSearch() {
         $.ajax({
             type: "POST",
-            url: "/User/SearchUser",
+            url: "/User/SearchUserByAuthUser",
             data: { search: $("#myInput").val() },
             success: function (data) {
+                //clear dropdown
                 $('#myDropdown').html("");
                 arrUsersSearch = [];
+
+                //if no users founded
                 if (data.length === 0) {
                     $('#myDropdown').append("<a>" + "No users founded!" + "</a>");
                 }
                 else {
+                    //foreach founded users
                     data.forEach(function (element) {
                         arrUsersSearch.push(element);
 
+                        //for not to show auth user
                         var userid = '@User.FindFirstValue(ClaimTypes.NameIdentifier)';
 
+                        //if user is not auth user and if user are not already added to arrUsersToAdd
                         if ((element.id !== userid) && (!(arrUsersToAdd.find(e => e.id === element.id)))) {
                             $('#myDropdown').append("<a value=" + element.id + " class=" + "user" + ">" + element.userName + "</a>");
                         }
@@ -168,6 +189,7 @@
         });
     }
 
+    //get selected group
     function GetGroup(selectedGroupId) {
         return $.ajax({
             dataType: 'json',
@@ -181,35 +203,47 @@
     }
 
     function FillGroupModal(selectedGroup) {
+        //if auth user not the owner of choosen group
         if (selectedGroup.userId != '@User.FindFirstValue(ClaimTypes.NameIdentifier)') {
+            //make inputs disable and hide buttons
             $('#btnEditGroup').hide();
             $('#btnDeleteGroup').hide();
             $('#Name').prop('disabled', true);
             $('#users').prop('disabled', true); myInput
             $('#myInput').prop('disabled', true);
         }
+        //if auth user is the owner of choosen group
         else {
+            //show all buttons for edit and enable the inputs
             $('#btnEditGroup').show();
             $('#btnDeleteGroup').show();
             $('#ManageGroupModal :input').prop('disabled', false);
             $('#btnCloseAdd').prop('disabled', false);
         };
+
+        //fill the inputs by parameters of choosen group
         $('#Name').val(selectedGroup.name);
         $('#GroupId').val(selectedGroup.id);
         $('#UserGroupId').val(selectedGroup.userId);
+
+        //if group with added users
         if (selectedGroup.users != null) {
             selectedGroup.users.forEach(function (element) {
+                //add added users in array
                 arrUsersToAdd.push(element);
                 if (element.id != '@User.FindFirstValue(ClaimTypes.NameIdentifier)') {
+                    //show all users except of auth user
                     $('#users').append("<option value=" + element.id + " class=selUser>" + element.userName + "</option>");
                 }
             });
         }
     }
 
+    //create group
     function AddGroup(event) {
         event.preventDefault();
 
+        //if "Name" input with whitespaces
         if (isNullOrWhitespace($('#Name').val()))
             return alert("Please, write not whitespace group name");
 
@@ -227,6 +261,7 @@
             contentType: "application/json;charset=utf-8",
             dataType: "json",
             success: function (result) {
+                //clear inputs and array if success
                 alert(result);
                 $('#users').html("");
                 $('#Name').val("");
@@ -238,12 +273,14 @@
         });
     }
 
+    //update group: all the time here send to controller array with all users (and which being already added), in controller this rewrite
     function UpdateGroup(event) {
         event.preventDefault();
 
         if (isNullOrWhitespace($('#Name').val()))
             return alert("Please, write not whitespace group name");
 
+        //send array already added users and newly added users (if this are added)
         var groupdto =
         {
             id: $('#GroupId').val(),
@@ -268,6 +305,7 @@
         });
     }
 
+    //delete existed group
     function DeleteGroup(event) {
         event.preventDefault();
 
@@ -284,6 +322,8 @@
                 success: function (result) {
                     alert(result);
                     $('#ManageGroupModal').modal('hide');
+
+                    //for update events (clear Group field, update available groups)
                     someCalendar.refetchEvents();
                 },
                 error: function (errormessage) {

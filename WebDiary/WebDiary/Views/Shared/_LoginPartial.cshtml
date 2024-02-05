@@ -7,10 +7,10 @@
 <ul class="navbar-nav flex-grow-1">
     @if (SignInManager.IsSignedIn(User))
     {
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="" asp-controller="Event" asp-action="Index">Calendar</a>
-    </li>
-    
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="" asp-controller="Event" asp-action="Index">Calendar</a>
+        </li>
+
         <li class="nav-item">
             <a class="nav-link text-dark" onclick="ShowManageGroupModal()">Manage groups</a>
             @* <a class="nav-link text-dark">Manage groups</a>
@@ -18,12 +18,15 @@
         <li><a onclick="ShowManageGroupModal()">New</a></li>
         </ul> *@
         </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="" asp-controller="Friends" asp-action="Index">Friend list</a>
+        </li>
     }
     @if (User.IsInRole("admin"))
     {
         @*partial for admin panel: delete groups, ban users, smth else*@
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="" asp-controller="Roles" asp-action="Index">Admin panel</a>
+            <a class="nav-link text-dark" asp-area="" asp-controller="Manage" asp-action="Index">Admin panel</a>
         </li>
     }
 </ul>

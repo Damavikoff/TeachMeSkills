@@ -1,6 +1,4 @@
-﻿using WebDiary.DAL.Models;
-
-namespace WebDiary.BLL.Models;
+﻿namespace WebDiary.BLL.Models;
 public class EventDTO
 {
     public Guid Id { get; set; }
@@ -18,5 +16,5 @@ public class EventDTO
     public bool? IsDone { get; set; } = false;
     public DateTime? DonedAt { get; set; } = default(DateTime?);
     public string? DonedById { get; set; }
-    public UserDTO? DonedBy { get; set; } = null!; //User
+    public UserDTO? DonedBy { get; set; } = null!;
 }

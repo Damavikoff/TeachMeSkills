@@ -8,6 +8,7 @@ using WebDiary.Models;
 
 namespace WebDiary.Controllers
 {
+    //admin panel 
     [Authorize(Roles = "admin")]
     public class RolesController : Controller //TODO: without navbar
     {
@@ -23,17 +24,21 @@ namespace WebDiary.Controllers
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
+
         [HttpPost]
         public async Task<IActionResult> SearchUser(string search)
         {
-            var result = await _userService.GetUsersAsync(search);
+            var result = await _userService.GetUsersContainsAsync(search);
             var objsViewModels = _mapper.Map<List<UserViewModel>>(result.Data);
             return Ok(objsViewModels);
         }
 
+        [HttpGet]
         public IActionResult Index() => View(_roleManager.Roles.ToList());
 
+        [HttpGet]
         public IActionResult Create() => View();
+
         [HttpPost]
         public async Task<IActionResult> Create(string name)
         {
@@ -65,16 +70,16 @@ namespace WebDiary.Controllers
             }
             return RedirectToAction("Index");
         }
-        
+
+        [HttpGet]
         public IActionResult UserList() => View(_userManager.Users.ToList());
 
+        [HttpGet]
         public async Task<IActionResult> Edit(string userId)
         {
-            // получаем пользователя
             User user = await _userManager.FindByIdAsync(userId);
             if (user != null)
             {
-                // получем список ролей пользователя
                 var userRoles = await _userManager.GetRolesAsync(user);
                 var allRoles = _roleManager.Roles.ToList();
                 ChangeRoleViewModel model = new ChangeRoleViewModel
@@ -89,6 +94,7 @@ namespace WebDiary.Controllers
 
             return NotFound();
         }
+
         [HttpPost]
         public async Task<IActionResult> Edit(string userId, List<string> roles)
         {
@@ -96,20 +102,15 @@ namespace WebDiary.Controllers
             User user = await _userManager.FindByIdAsync(userId);
             if (user != null)
             {
-                // получем список ролей пользователя
                 var userRoles = await _userManager.GetRolesAsync(user);
-                // получаем все роли
                 var allRoles = _roleManager.Roles.ToList();
                 // получаем список ролей, которые были добавлены
                 var addedRoles = roles.Except(userRoles);
                 // получаем роли, которые были удалены
                 var removedRoles = userRoles.Except(roles);
-
                 await _userManager.AddToRolesAsync(user, addedRoles);
-
                 await _userManager.RemoveFromRolesAsync(user, removedRoles);
-
-                return RedirectToAction("UserList");
+                return LocalRedirect("/Manage/");
             }
             return NotFound();
         }

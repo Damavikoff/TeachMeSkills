@@ -7,6 +7,7 @@ using WebDiary.Services;
 
 namespace WebDiary.Controllers
 {
+    //login and register
     public class AccountController : Controller
     {
         private readonly UserManager<User> _userManager;
@@ -33,24 +34,21 @@ namespace WebDiary.Controllers
 
                 User user = new User { Email = model.Email, UserName = name};
 
-                // добавляем пользователя
                 var result = await _userManager.CreateAsync(user, model.Password);
 
                 if (result.Succeeded)
                 {
-                    var addToRole = await _userManager.AddToRoleAsync(user, "user");
-                    //// установка куки
-                    //await _signInManager.SignInAsync(user, false);
-                    //return RedirectToAction("Index", "Event");
-
-                    // генерация токена для пользователя
+                    await _userManager.AddToRoleAsync(user, "user");
+                    
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     var callbackUrl = Url.Action(
                         "ConfirmEmail",
                         "Account",
                         new { userId = user.Id, code = code },
                         protocol: HttpContext.Request.Scheme);
+
                     EmailService emailService = new EmailService();
+
                     await emailService.SendEmailAsync(model.Email, "Confirm your account",
                         $"Подтвердите регистрацию на WebDiary.ru, перейдя по ссылке: <a href='{callbackUrl}'>link</a>");
 
@@ -102,7 +100,6 @@ namespace WebDiary.Controllers
                 var user = await _userManager.FindByNameAsync(model.Email);
                 if (user != null)
                 {
-                    // проверяем, подтвержден ли email
                     if (!await _userManager.IsEmailConfirmedAsync(user))
                     {
                         ModelState.AddModelError(string.Empty, "Вы не подтвердили свой email");
@@ -113,7 +110,6 @@ namespace WebDiary.Controllers
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
                 if (result.Succeeded)
                 {
-                    // проверяем, принадлежит ли URL приложению
                     if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
                     {
                         return Redirect(model.ReturnUrl);
@@ -135,7 +131,6 @@ namespace WebDiary.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            // удаляем аутентификационные куки
             await _signInManager.SignOutAsync();
             return RedirectToAction("Login", "Account");
         }

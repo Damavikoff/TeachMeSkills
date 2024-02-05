@@ -19,6 +19,9 @@ namespace WebDiary.BLL.Services
 
             CreateMap<UserDTO, User>();
             CreateMap<UserDTO, User>().ReverseMap();
+
+            CreateMap<FriendsDTO, Friends>();
+            CreateMap<FriendsDTO, Friends>().ReverseMap();
         }
     }
 }
