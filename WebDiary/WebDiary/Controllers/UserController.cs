@@ -14,10 +14,13 @@ namespace WebDiary.Controllers
     {
         private readonly IMapper _mapper;
         private readonly IUserService _userService;
-        public UserController(IUserService userService, IMapper mapper)
+        private readonly IFriendsService _friendsService;
+
+        public UserController(IUserService userService, IMapper mapper, IFriendsService friendsService)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _friendsService = friendsService ?? throw new ArgumentNullException(nameof(friendsService));
         }
 
         [HttpPost]
@@ -25,8 +28,20 @@ namespace WebDiary.Controllers
         {
             var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var result = await _userService.GetFriendsAsync(search, authUserId);
-            var objsViewModels = _mapper.Map<List<UserViewModel>>(result.Data);
+            var result = await _friendsService.GetFriendsBySearchAsync(search, authUserId);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Message);
+            }
+
+            var objsViewModels = new List<UserViewModel>();
+
+            foreach (var user in result.Data)
+            {
+                objsViewModels.Add(_mapper.Map<UserViewModel>(user.Friend));
+            }
+            
             return Ok(objsViewModels);
         }
 
@@ -34,19 +49,48 @@ namespace WebDiary.Controllers
         public async Task<IActionResult> SearchUser(string search)
         {
             var result = await _userService.GetUsersStartsWithAsync(search);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Message);
+            }
+
             var objsViewModels = _mapper.Map<List<UserViewModel>>(result.Data);
             return Ok(objsViewModels);
         }
 
         public async Task<IActionResult> Index()
         {
+            return RedirectPermanent("/User/Profile");
+        }
+
+        public async Task<IActionResult> Profile()
+        {
             var result = await _userService.GetUserByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Message);
+            }
+
             return View(result.Data);
         }
 
-        public async Task<IActionResult> Edit(string id)
+        public async Task<IActionResult> AccountDetails(string id)
         {
-            return PartialView("Edit");
+            return PartialView("AccountDetailsPartial");
+        }
+
+        public async Task<IActionResult> Security()
+        {
+            var result = await _userService.GetUserByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Message);
+            }
+
+            return View(result.Data);
         }
 
         [HttpPost]
@@ -57,14 +101,12 @@ namespace WebDiary.Controllers
                 var objDto = _mapper.Map<UserDTO>(model);
                 var result = await _userService.ChangeUserNameAsync(objDto);
 
-                if (result.Succeeded)
-                {
-                    return RedirectToAction("Index");
-                }
-                else
+                if (!result.Succeeded)
                 {
                     return Json(result.Message);
                 }
+                
+                return RedirectToAction("Index");
             }
             return View(model);
         }
@@ -77,18 +119,17 @@ namespace WebDiary.Controllers
         [HttpPost]
         public async Task<IActionResult> ChangePassword(EditUserViewModel userModel)
         {
-            var test = HttpContext;
+            var test = HttpContext; //DI container?
             if (ModelState.IsValid)
             {
                 var result = await _userService.ChangeUserPasswordAsync(userModel.Id, userModel.NewPassword, test);
-                if (result.Succeeded)
-                {
-                    return RedirectToAction("Index");
-                }
-                else
+
+                if (!result.Succeeded)
                 {
                     return Json(result.Message);
                 }
+
+                return RedirectToAction("Index");
             }
             return View(userModel);
         }

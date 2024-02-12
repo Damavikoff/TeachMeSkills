@@ -7,7 +7,7 @@ namespace WebDiary.BLL.Models
         public string UserId { get; set; }
         public string FriendId { get; set; }
 
-        public User User { get; set; }
-        public User Friend { get; set; }
+        public UserDTO User { get; set; }
+        public UserDTO Friend { get; set; }
     }
 }

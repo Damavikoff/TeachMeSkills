@@ -1,5 +1,0 @@
-﻿@using System.Security.Claims;
-
-@await Html.PartialAsync("Edit", new EditUserViewModel(){Id=Model.Id,Email=Model.Email})
-<br />
-@await Html.PartialAsync("ChangePassword", new EditUserViewModel() { Id = Model.Id, Email = Model.Email})

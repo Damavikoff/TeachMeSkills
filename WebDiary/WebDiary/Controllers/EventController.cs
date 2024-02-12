@@ -56,7 +56,7 @@ namespace WebDiary.Controllers
 
             var result = await _eventService.GetEventAsync(id, authUserId);
 
-            if (result.Succeeded == false)
+            if (!result.Succeeded)
             {
                 return BadRequest(result.Message); 
             }
@@ -74,7 +74,7 @@ namespace WebDiary.Controllers
             var objDTO = _mapper.Map<EventDTO>(eventModel);
             var result = await _eventService.CreateEventAsync(objDTO, authUserId);
 
-            if (result.Succeeded == false)
+            if (!result.Succeeded)
             {
                 return BadRequest(result.Message);
             }
@@ -92,7 +92,7 @@ namespace WebDiary.Controllers
             var objDTO = _mapper.Map<EventDTO>(eventModel);
             var result = await _eventService.UpdateEventAsync(objDTO, authUserId);
 
-            if (result.Succeeded == false)
+            if (!result.Succeeded)
             {
                 return BadRequest(result.Message);
             }
@@ -109,7 +109,7 @@ namespace WebDiary.Controllers
 
             var result = await _eventService.DeleteEventAsync(id, authUserId);
 
-            if (result.Succeeded == false)
+            if (!result.Succeeded)
             {
                 return BadRequest(result.Message);
             }

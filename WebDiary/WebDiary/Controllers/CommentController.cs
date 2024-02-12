@@ -27,6 +27,7 @@ namespace WebDiary.Controllers
             var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var result = await _commentService.GetCommentsAsync(id, authUserId);
+
             var commentsViewModels = _mapper.Map<List<CommentViewModel>>(result.Data);
             return PartialView("ShowEventCommentsPartial", commentsViewModels);
         }
@@ -41,10 +42,8 @@ namespace WebDiary.Controllers
         [CommentValidationFilter]
         public async Task<IActionResult> CreateComment([FromBody] CommentViewModel comment)
         {
-            //comment.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             var objDTO = _mapper.Map<CommentDTO>(comment);
-            //проверить в блл комент на норм вид
+            
             var result = await _commentService.CreateCommentAsync(objDTO);
 
             if (result.Succeeded == false)
@@ -62,7 +61,7 @@ namespace WebDiary.Controllers
 
         [HttpPatch]
         [CommentValidationFilter]
-        public async Task<IActionResult> UpdateComment([FromBody] CommentViewModel comment) //[FromBody] Guid Id
+        public async Task<IActionResult> UpdateComment([FromBody] CommentViewModel comment)
         {
             var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -80,7 +79,7 @@ namespace WebDiary.Controllers
 
         [HttpPost]
         //[CommentValidationFilter]
-        public async Task<IActionResult> DeleteComment([FromBody] CommentViewModel comment) //[FromBody] Guid Id
+        public async Task<IActionResult> DeleteComment([FromBody] CommentViewModel comment)
         {
             var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 

@@ -1,6 +1,11 @@
 ﻿@using System.Security.Claims;
 @model WebDiary.Models.EventViewModel
 
+@* <style type="text/css">
+    .card {
+        box-shadow: 0 0.15rem 1.75rem 0 rgb(33 40 50 / 15%);
+    }
+</style> *@
 @{
     ViewData["Title"] = "Event Calendar";
 }
@@ -111,9 +116,12 @@
                 },
 
                 eventDidMount: function (info) {
-                    $(info.el).tooltip({ //bootstrap tooltip
-                        title: info.event.extendedProps.description,
-                    });
+                    if (info.event.extendedProps.description) { //for gridViews when creating event
+                        $(info.el).tooltip({ //bootstrap tooltip
+                            title: info.event.extendedProps.description,
+                        });
+                    }
+                    
                     var gid = info.event.extendedProps.groupIdentificator
                     if (gid !== null) {
                         $(info.el).css("border-style", "dotted");
@@ -220,6 +228,11 @@
                 return 0;
             }
         });
+
+        // $('#refresh').on('click', function () {
+        //     $("#calendar").refetchEvents();
+        // });
+
 
         function ClearEventModal() {
             $('#Title').val("");

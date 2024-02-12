@@ -23,6 +23,20 @@ namespace WebDiary.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var result = await _groupService.ShowUserGroups(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            if (result.Succeeded == false)
+            {
+                return Json(result.Message);
+            }
+
+            var obj = _mapper.Map<List<GroupViewModel>>(result.Data);
+            return View(obj);
+        }
+
+        [HttpGet]
         public IActionResult ManageGroupPartial()
         {
             return PartialView("ManageGroupPartial");
@@ -66,8 +80,8 @@ namespace WebDiary.Controllers
                 return BadRequest(result.Message);
             }
 
-            //var objViewModel = _mapper.Map<GroupViewModel>(result.Data);
-            return Json(result.Message); //return Ok is not refetched events
+            var objViewModel = _mapper.Map<GroupViewModel>(result.Data);
+            return PartialView("ReturnedGroupPartial", objViewModel);
         }
 
         [HttpPost]
@@ -84,7 +98,6 @@ namespace WebDiary.Controllers
                 return BadRequest(result.Message);
             }
 
-            //var objViewModel = _mapper.Map<GroupViewModel>(result.Data);
             return Json(result.Message);
         }
 

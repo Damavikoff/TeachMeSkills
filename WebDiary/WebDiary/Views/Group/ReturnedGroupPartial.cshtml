@@ -1,0 +1,20 @@
+﻿@using System.Security.Claims;
+@model GroupViewModel
+
+<div class="d-flex align-items-center justify-content-between px-4 groups">
+    <div class="d-flex align-items-center">
+        <i class="fab fa-cc-mastercard fa-2x cc-color-mastercard"></i>
+        <div class="ms-4">
+            <input type="hidden" class="form-control" class="groupId" value="@Model.Id">
+            <div class="small group">@Model.Name</div>
+            <div class="text-xs text-muted">Friends from 05/2022</div>
+        </div>
+    </div>
+    <div class="ms-4 small">
+        @* <a class="text-muted me-3" asp-controller="Group" asp-action="DeleteGroup2" asp-route-id="@group.Id">Delete</a> *@
+        <a class="groupDelete text-muted me-3" href="#!" onclick="DeleteGroup(event,$(this))">Delete</a>
+        <a href="#!" onclick="ShowEditGroupModal('@Model.Id')">Edit</a>
+    </div>
+</div>
+@*after delete space for Undo action*@
+<hr>

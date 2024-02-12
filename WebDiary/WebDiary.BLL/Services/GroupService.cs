@@ -23,7 +23,7 @@ namespace WebDiary.BLL.Services
         /// <param name="id">
         /// ID of an authenticated user
         /// </param>
-        public async Task<ServiceDataResponse<List<GroupDTO>>> ShowUserGroups(string id)
+        public async Task<ServiceDataResponse<List<GroupDTO>>> ShowUserGroups(string id) //GetUserGroups
         {
             var userGroups = await _webDiaryContext.Users.Where(u => u.Id == id).SelectMany(g => g.JoinedGroups).ToListAsync();
 

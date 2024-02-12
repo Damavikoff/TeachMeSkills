@@ -25,13 +25,19 @@ namespace WebDiary.Controllers
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        [HttpPost]
-        public async Task<IActionResult> SearchUser(string search)
-        {
-            var result = await _userService.GetUsersContainsAsync(search);
-            var objsViewModels = _mapper.Map<List<UserViewModel>>(result.Data);
-            return Ok(objsViewModels);
-        }
+        //[HttpPost]
+        //public async Task<IActionResult> SearchUser(string search)
+        //{
+        //    var result = await _userService.GetUsersContainsAsync(search);
+
+        //    if (!result.Succeeded)
+        //    {
+        //        return Json(result.Message);
+        //    }
+
+        //    var objsViewModels = _mapper.Map<List<UserViewModel>>(result.Data);
+        //    return Ok(objsViewModels);
+        //}
 
         [HttpGet]
         public IActionResult Index() => View(_roleManager.Roles.ToList());
@@ -45,17 +51,15 @@ namespace WebDiary.Controllers
             if (!string.IsNullOrEmpty(name))
             {
                 IdentityResult result = await _roleManager.CreateAsync(new IdentityRole(name));
-                if (result.Succeeded)
-                {
-                    return RedirectToAction("Index");
-                }
-                else
+                if (!result.Succeeded)
                 {
                     foreach (var error in result.Errors)
                     {
                         ModelState.AddModelError(string.Empty, error.Description);
                     }
                 }
+                
+                return RedirectToAction("Index");
             }
             return View(name);
         }
@@ -64,10 +68,12 @@ namespace WebDiary.Controllers
         public async Task<IActionResult> Delete(string id)
         {
             IdentityRole role = await _roleManager.FindByIdAsync(id);
+
             if (role != null)
             {
                 IdentityResult result = await _roleManager.DeleteAsync(role);
             }
+
             return RedirectToAction("Index");
         }
 

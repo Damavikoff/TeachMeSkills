@@ -9,14 +9,14 @@
                     <h4 class="modal-title" id="title">
                         Create group
                     </h4>
-                    <div class="group-selector-partial2"> </div>
+                    @* <div class="group-selector-partial2"> </div>
                     <script>
                         $(document).ready(function () {
                             $('#btnEditGroup').hide();
                             $('#btnDeleteGroup').hide();
                             $('.group-selector-partial2').load('/Group/ShowUserGroupsDropDownPartial');
                         });
-                    </script>
+                    </script> *@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" class="form-control" id="GroupId">
@@ -47,7 +47,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-dismiss="modal" id="btnDeleteGroup" formnovalidate="formnovalidate" onclick="return DeleteGroup(event)">Delete</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal" id="btnDeleteGroup" formnovalidate="formnovalidate" onclick="return DeleteGroupModal(event)">Delete</button>
                     <button type="submit" class="btn btn-success" id="btnEditGroup">Save</button>
                     <button type="submit" class="btn btn-success" id="btnSaveGroup">Create</button>
                     <button type="button" class="btn btn-danger" data-dismiss="modal" id="btnCloseAdd">Close</button>
@@ -87,42 +87,6 @@
         }
         else {
             return 0;
-        }
-    });
-
-    //on change group selector
-    $('.group-selector-partial2').change(function () {
-        //clear all inputs
-        $('#Name').val("");
-        $('#GroupId').val("");
-        $('#UserGroupId').val("");
-        $('#users').empty(); 
-        
-        //select choosen group
-        var selectedGroupId = $(this).find('.Group').val();
-        
-        //if not "None"
-        if (selectedGroupId != "null") {
-            arrUsersToAdd = [];
-            $('#btnEditGroup').show();
-            $('#btnDeleteGroup').show();
-            $('#btnSaveGroup').hide();
-            $('#title').text("Edit group");
-
-            //get selected group
-            var selectedGroup = GetGroup(selectedGroupId);
-
-            //fill modal by selected group
-            FillGroupModal(selectedGroup.responseJSON);
-        }
-        else {
-            arrUsersToAdd = [];
-            $('#ManageGroupModal :input').prop('disabled', false);
-            $('#btnCloseAdd').prop('disabled', false);
-            $('#btnEditGroup').hide();
-            $('#btnDeleteGroup').hide();
-            $('#btnSaveGroup').show();
-            $('#title').text("Create group");
         }
     });
 
@@ -189,56 +153,6 @@
         });
     }
 
-    //get selected group
-    function GetGroup(selectedGroupId) {
-        return $.ajax({
-            dataType: 'json',
-            type: "GET",
-            url: "/Group/GetGroup",
-            async: false,
-            data: { groupId: selectedGroupId },
-            success: function (data) {
-            }
-        });
-    }
-
-    function FillGroupModal(selectedGroup) {
-        //if auth user not the owner of choosen group
-        if (selectedGroup.userId != '@User.FindFirstValue(ClaimTypes.NameIdentifier)') {
-            //make inputs disable and hide buttons
-            $('#btnEditGroup').hide();
-            $('#btnDeleteGroup').hide();
-            $('#Name').prop('disabled', true);
-            $('#users').prop('disabled', true); myInput
-            $('#myInput').prop('disabled', true);
-        }
-        //if auth user is the owner of choosen group
-        else {
-            //show all buttons for edit and enable the inputs
-            $('#btnEditGroup').show();
-            $('#btnDeleteGroup').show();
-            $('#ManageGroupModal :input').prop('disabled', false);
-            $('#btnCloseAdd').prop('disabled', false);
-        };
-
-        //fill the inputs by parameters of choosen group
-        $('#Name').val(selectedGroup.name);
-        $('#GroupId').val(selectedGroup.id);
-        $('#UserGroupId').val(selectedGroup.userId);
-
-        //if group with added users
-        if (selectedGroup.users != null) {
-            selectedGroup.users.forEach(function (element) {
-                //add added users in array
-                arrUsersToAdd.push(element);
-                if (element.id != '@User.FindFirstValue(ClaimTypes.NameIdentifier)') {
-                    //show all users except of auth user
-                    $('#users').append("<option value=" + element.id + " class=selUser>" + element.userName + "</option>");
-                }
-            });
-        }
-    }
-
     //create group
     function AddGroup(event) {
         event.preventDefault();
@@ -259,13 +173,15 @@
             data: JSON.stringify(groupdto),
             type: "POST",
             contentType: "application/json;charset=utf-8",
-            dataType: "json",
+            // dataType: "json",
+            async:false,
             success: function (result) {
                 //clear inputs and array if success
-                alert(result);
-                $('#users').html("");
-                $('#Name').val("");
-                arrUsersToAdd = [];
+                $('#ManageGroupModal').modal('hide');
+                // $('#users').html("");
+                // $('#Name').val("");
+                // arrUsersToAdd = [];
+                $('.card-body.px-0').append(result);
             },
             error: function (errormessage) {
                 alert(errormessage.responseText);
@@ -306,9 +222,9 @@
     }
 
     //delete existed group
-    function DeleteGroup(event) {
+    function DeleteGroupModal(event) {
         event.preventDefault();
-
+       
         const result = confirm('Are you sure to delete group "' + $('#Name').val() + '" ?');
 
         if (result) {
@@ -322,16 +238,18 @@
                 success: function (result) {
                     alert(result);
                     $('#ManageGroupModal').modal('hide');
-
-                    //for update events (clear Group field, update available groups)
-                    someCalendar.refetchEvents();
+                    var test = document.getElementById("groups");
+                    $(".groups").each((index, element) => {
+                        var groupId = element.getElementsByTagName("input")[0].value;
+                        if (groupId === $('#GroupId').val()) {
+                            element.remove();
+                        }
+                    });
                 },
                 error: function (errormessage) {
                     alert(errormessage.responseText);
                 }
             });
-        } else {
-            alert("Group is not deleted!");
         }
     }
 </script>

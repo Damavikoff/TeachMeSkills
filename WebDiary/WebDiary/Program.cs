@@ -17,6 +17,7 @@ builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserManageService, UserManageService>();
 builder.Services.AddScoped<IFriendsService, FriendsService>();
 
 builder.Services.AddAutoMapper(typeof(EventDTOMappingProfile), typeof(EventViewModelMappingProfile));

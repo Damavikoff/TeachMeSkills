@@ -20,6 +20,7 @@ namespace WebDiary.BLL.Services
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         }
+
         /// <summary>
         /// Get user by UserName which contains search string
         /// </summary>
@@ -51,43 +52,6 @@ namespace WebDiary.BLL.Services
         }
 
         /// <summary>
-        /// Get user by UserName and id of auth user which starts with search string
-        /// </summary>
-        public async Task<ServiceDataResponse<List<UserDTO>>> GetFriendsAsync(string search, string authUserId)
-        {
-            var friends = await _webDiaryContext.Friends.Include(x => x.Friend).Where(a => a.UserId == authUserId).ToListAsync();
-
-            var objs = await _webDiaryContext.Users.Where(u => u.Id == authUserId).SelectMany(g => g.UserFriends).Where(p => p.Friend.UserName.StartsWith(search)).ToListAsync();
-
-            if (objs == null)
-                return ServiceDataResponse<List<UserDTO>>.Fail("User is not exist!");
-
-            var objDTO = new List<UserDTO>();
-
-            foreach (var user in objs)
-            {
-                objDTO.Add(_mapper.Map<UserDTO>(user.Friend));
-            }
-
-            return ServiceDataResponse<List<UserDTO>>.Success(objDTO);
-        }
-
-        /// <summary>
-        /// Get all users
-        /// </summary>
-        public async Task<ServiceDataResponse<List<UserDTO>>> GetUsersAsync()
-        {
-            var result = await _userManager.Users.ToListAsync();
-
-            if (result == null)
-                return ServiceDataResponse<List<UserDTO>>.Fail("There are no users exist"); //Success?
-
-            var objDTO = _mapper.Map<List<UserDTO>>(result);
-
-            return ServiceDataResponse<List<UserDTO>>.Success(objDTO);
-        }
-
-        /// <summary>
         /// Get user by user id
         /// </summary>
         public async Task<ServiceDataResponse<UserDTO>> GetUserByIdAsync(string userId)
@@ -100,26 +64,6 @@ namespace WebDiary.BLL.Services
             var objDTO = _mapper.Map<UserDTO>(obj);
 
             return ServiceDataResponse<UserDTO>.Success(objDTO);
-        }
-
-        /// <summary>
-        /// Create a new user
-        /// </summary>
-        public async Task<ServiceDataResponse<UserDTO>>CreateUserAsync(string userName, string pass)
-        {
-            try
-            {
-                User user = new User { Email = userName, UserName = userName, EmailConfirmed = true };
-                var result = await _userManager.CreateAsync(user, pass);
-                await _userManager.AddToRoleAsync(user, "user");
-                var objDTO = _mapper.Map<UserDTO>(user);
-                return ServiceDataResponse<UserDTO>.Success(objDTO);
-            }
-            catch (Exception ex)
-            {
-                return ServiceDataResponse<UserDTO>.Fail(ex.Message);
-            }
-
         }
 
         /// <summary>
@@ -187,29 +131,6 @@ namespace WebDiary.BLL.Services
                     errorList.Add(error.Description); //logger
                 }
                 return ServiceDataResponse<UserDTO>.Fail("User not founded!");
-            }
-        }
-
-        /// <summary>
-        /// Delete user by id
-        /// </summary>
-        public async Task<ServiceResponse> DeleteUserAsync(string userId)
-        {
-            var obj = await _userManager.FindByIdAsync(userId);
-
-            if (obj == null)
-            {
-                return ServiceResponse.Fail("User not founded!");
-            }
-
-            try
-            {
-                await _userManager.DeleteAsync(obj);
-                return ServiceResponse.Success();
-            }
-            catch (Exception ex)
-            {
-                return ServiceResponse.Fail(ex.Message);
             }
         }
     }

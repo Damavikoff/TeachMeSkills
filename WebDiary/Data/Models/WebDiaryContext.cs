@@ -39,6 +39,17 @@ public partial class WebDiaryContext : IdentityDbContext<User>
             .IsUnicode(true);
         });
 
+        modelBuilder.Entity<Event>()
+        .ToTable(tb => tb.HasTrigger("trg_EventDelete"));
+
+        modelBuilder.Entity<Comment>()
+        .HasOne(p => p.Event).WithMany(b => b.Comments)
+        .HasForeignKey(p => p.EventId)
+        .OnDelete(deleteBehavior: DeleteBehavior.ClientCascade); //!
+
+        modelBuilder.Entity<Comment>()
+       .ToTable(tb => tb.HasTrigger("trg_CommentDelete"));
+
         modelBuilder.Entity<Group>()
         .HasMany(e => e.Users)
         .WithMany(e => e.JoinedGroups)
@@ -61,19 +72,23 @@ public partial class WebDiaryContext : IdentityDbContext<User>
         .OnDelete(deleteBehavior: DeleteBehavior.NoAction) //!
         .IsRequired();
 
+        modelBuilder.Entity<User>()
+       .ToTable(tb => tb.HasTrigger("trg_AspNetUsersDelete"));
+
         modelBuilder.Entity<Group>()
         .HasMany(e => e.Events)
         .WithOne(e => e.Group)
         .HasForeignKey(e => e.GroupIdentificator)
         .OnDelete(deleteBehavior: DeleteBehavior.SetNull);
 
-        modelBuilder.Entity<Comment>()
-        .HasOne(p => p.Event).WithMany(b => b.Comments)
-        .HasForeignKey(p => p.EventId)
-        .OnDelete(deleteBehavior: DeleteBehavior.ClientCascade); //!
+        modelBuilder.Entity<Group>()
+        .ToTable(tb => tb.HasTrigger("trg_GroupDelete"));
 
         modelBuilder.Entity<Friends>()
                .HasKey(t => new { t.UserId, t.FriendId });
+
+        modelBuilder.Entity<Friends>()
+        .ToTable(tb => tb.HasTrigger("trg_FriendsDelete"));
 
         modelBuilder.Entity<Friends>()
         .HasOne(e => e.User)

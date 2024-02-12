@@ -1,15 +1,14 @@
 @using System.Security.Claims;
-@model List<FriendsViewModel>
+@model List<GroupViewModel>
 @{
     ViewBag.Title = "Friend list";
 }
 
-
 <style type="text/css">
     /* body{margin-top:20px;
-    background-color:#f2f6fc;
-    color:#69707a;
-    } */
+            background-color:#f2f6fc;
+            color:#69707a;
+            } */
     .img-account-profile {
         height: 10rem;
     }
@@ -112,6 +111,7 @@
     }
 </style>
 
+
 <body>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" integrity="sha256-2XFplPlrFClt0bIdPgpz8H7ojnk10H69xRqd9+uTShA=" crossorigin="anonymous" />
     <div class="container-xl px-4 mt-4">
@@ -119,17 +119,16 @@
         <nav class="nav nav-borders">
             <a class="nav-link  ms-0" asp-controller="User" asp-action="Profile">Profile</a>
             <a class="nav-link" asp-controller="User" asp-action="Security">Security</a>
-            <a class="nav-link active" asp-action="Index">Friend list</a>
-            <a class="nav-link" asp-controller="Group" asp-action="Index">Group list</a>
+            <a class="nav-link" asp-controller="Friends" asp-action="Index">Friend list</a>
+            <a class="nav-link active" asp-action="Index">Group list</a>
         </nav>
         <hr class="mt-0 mb-4">
         <div class="row">
             <div class="col-lg-4 mb-4">
-
                 <div class="card h-100 border-start-lg border-start-primary">
                     <div class="card-body">
-                        <div class="small text-muted">Notices</div>
-                        <div class="h4">User1, User2, User3, ...</div>
+                        <div class="small text-muted">Invites</div>
+                        <div class="h4">Group1, Group2, Group3, ...</div>
                         <a class="text-arrow-icon small" href="#!">
                             Look
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
@@ -140,54 +139,57 @@
             <div class="col-lg-4 mb-4">
                 <div class="card h-100 border-start-lg border-start-secondary">
                     <div class="card-body">
-                        <div class="small text-muted">Notices dark</div>
-                        <div class="h4">no notifications yet</div>
+                        <div class="small text-muted">Invites dark</div>
+                        <div class="h4">no invites yet</div>
                         @* <a class="text-arrow-icon small text-secondary" href="#!">
-                             Look
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                        Look
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                         </a> *@
                     </div>
                 </div>
             </div>
-            
+
         </div>
 
         <div class="card card-header-actions mb-4">
             <div class="card-header">
-                Friends@* <button class="btn btn-sm btn-primary" type="button"> or here add new? </button> *@
+                Groups@* <button class="btn btn-sm btn-primary" type="button"> or here add new? </button> *@
             </div>
             <div class="card-body px-0">
-                @foreach (var friend in Model)
+                @foreach (var group in Model)
                 {
-                    <div class="d-flex align-items-center justify-content-between px-4 friends">
+                    <div class="d-flex align-items-center justify-content-between px-4 groups">
                         <div class="d-flex align-items-center">
                             <i class="fab fa-cc-mastercard fa-2x cc-color-mastercard"></i>
                             <div class="ms-4">
-                                <input type="hidden" class="form-control" class="friendId" value="@friend.FriendId">
-                                <div class="small friend">@friend.FriendUserName</div>
+                                <input type="hidden" class="form-control" class="groupId" value="@group.Id">
+                                <div class="small group">@group.Name</div>
                                 <div class="text-xs text-muted">Friends from 05/2022</div>
                             </div>
                         </div>
                         <div class="ms-4 small">
-                            <a class="friendDelete text-muted me-3" href="#!" onclick="DeleteFriend(event,$(this))">Delete</a>
-                            <a href="#!">Send notice</a>
+                            @* <a class="text-muted me-3" asp-controller="Group" asp-action="DeleteGroup2" asp-route-id="@group.Id">Delete</a> *@
+                            <a class="groupDelete text-muted me-3" href="#!" onclick="DeleteGroup(event,$(this))">Delete</a>
+                            <a class="groupEdit" href="#!" onclick="ShowEditGroupModal('@group.Id')">Edit</a>
                         </div>
                     </div>
+                    @*after delete space for Undo action*@//
                     <hr>
+
                 }
-                </div>
-                @* <div class="card-body text-right">
-                    <button class="btn btn-sm btn-primary" type="button">Add new (modal with search)</button>
-            </div> *@
-            <div class="card-body text-right">
-                <label for="UserEmail"><b>Add friend</b></label>
-                <input type="text" id="myInput3" oninput="GetSearch()" class="form-control">
-                <div id="myDropdown3" class="dropdown-content"></div>
+                @*  <div class="card-body text-right">
+                <button class="btn btn-sm btn-primary" type="button" onclick="ShowAddGroupModal()">Create a new group (modal)</button>
+                </div> *@
             </div>
+            <div class="card-body text-right">
+                <button class="btn btn-sm btn-primary" type="button" onclick="ShowAddGroupModal()">Create a new group</button>
+            </div>
+
+
         </div>
 
         <div class="card mb-4">
-            <div class="card-header">Friends History</div>
+            <div class="card-header">Groups History</div>
             <div class="card-body p-0">
 
                 <div class="table-responsive table-billing-history">
@@ -195,25 +197,29 @@
                         <thead>
                             <tr>
                                 <th class="border-gray-200" scope="col">Username</th>
+                                <th class="border-gray-200" scope="col">Group</th>
                                 <th class="border-gray-200" scope="col">Date</th>
                                 <th class="border-gray-200" scope="col">Action</th>
-                                <th class="border-gray-200" scope="col">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 <td>User1</td>
+                                <td>Default</td>
                                 <td>06/15/2021</td>
-                                <td>Invite</td>
-                                <td><span class="badge bg-success">Accept</span>
-                                    <span class="badge bg-danger">Decline</span>
-                                </td>
+                                <td><span class="badge bg-success">Joined</span></td>
                             </tr>
                             <tr>
                                 <td>User2</td>
+                                <td>Default2</td>
                                 <td>05/15/2021</td>
-                                <td>Remove</td>
-                                <td></td>
+                                <td><span class="badge bg-danger">Leaved</span></td>
+                            </tr>
+                            <tr>
+                                <td>User3</td>
+                                <td>Default3</td>
+                                <td>07/15/2021</td>
+                                <td><span class="badge bg-danger">Kicked</span></td>
                             </tr>
                         </tbody>
                     </table>
@@ -221,111 +227,130 @@
             </div>
         </div>
     </div>
+    <div id="manage-group-modal-partial"> </div>
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        //array for already added friends
-        var arrFriends = new Array();
-
-        //get already added friends 
+        // var groupToDelete;
         $(document).ready(function () {
-            $(".friends").each((index, element) => {
-                var friendId = element.getElementsByTagName("input")[0].value;
-                arrFriends.push(friendId);
-            });
-        });
-
-        document.addEventListener("click", function (e) {
-            $('#myDropdown3').html("");
-        });
-
-        //add user from dropdown search
-        $("#myDropdown3").on("click", ".user", function (evt) {
-            var friendId = this.getAttribute("value");
-            AddFriend(friendId);
-        });
-
-        function AddFriend(friendId) {
-            var friends = {
-                userId: '@User.FindFirstValue(ClaimTypes.NameIdentifier)',
-                friendId: friendId
-            }
-
             $.ajax({
-                type: "POST",
-                url: "/Friends/AddFriend",
-                data: JSON.stringify(friends),
-                contentType: "application/json;charset=utf-8",
-                // dataType: "json",
-                success: function (result) {
-                    //clear inputs and array if success
-                    $('#myInput3').val("");
-                    $('#myDropdown3').html("");
-                    //add newly added user to array
-                    arrFriends.push(friendId);
-                    $('.card-body.px-0').append(result);
-                },
-                error: function (errormessage) {
-                    alert(errormessage.responseText);
+                type: "GET",
+                url: "/Group/ManageGroupPartial",
+                dataType: 'html',
+                success: function (data) {
+                    $('#manage-group-modal-partial').html(data);
                 }
             });
+        });
+
+        function ClearGroupModal() {
+            arrUsersToAdd = [];
+            $('#Name').val("");
+            $('#GroupId').val("");
+            $('#UserGroupId').val("");
+            $('#myInput').val("");
+            $('#users').empty();
         }
 
-        function GetSearch() { //trigger on 3 letters
-            if ($("#myInput3").val().length > 2) {
-                $.ajax({
-                    type: "POST",
-                    url: "/User/SearchUser",
-                    data: { search: $("#myInput3").val() },
-                    success: function (data) {
-                        $('#myDropdown3').html("");
-                        if (data.length === 0) {
-                            $('#myDropdown3').append("<a>" + "No users founded!" + "</a>");
-                        }
-                        else {
-                            data.forEach(function (element) {
-                                var userid = '@User.FindFirstValue(ClaimTypes.NameIdentifier)';
-                                if ((element.id !== userid) && (!(arrFriends.find(e => e === element.id)))) {
-                                    $('#myDropdown3').append("<a value=" + element.id + " class=" + "user" + ">" + element.userName + "</a>");
-                                }
-                            });
-                        }
+        function ShowAddGroupModal() {
+            $('#title').text("Create group");
+            //clear all props
+            $('#ManageGroupModal :input').prop('disabled', false);
+            $('#btnCloseAdd').prop('disabled', false);
+            $('#btnEditGroup').hide();
+            $('#btnDeleteGroup').hide();
+            $('#btnSaveGroup').show();
+            //clear all inputs
+            ClearGroupModal();
+            $('#ManageGroupModal').modal('show');
+        }
+
+        function ShowEditGroupModal(groupId) {
+            ClearGroupModal();
+            $('#title').text("Edit group");
+            var select = GetGroup(groupId);
+            $('#btnSaveGroup').hide();
+            $('#ManageGroupModal').modal('show');
+
+            var selectedGroup = select.responseJSON;
+
+            //if auth user not the owner of choosen group
+            if (selectedGroup.userId != '@User.FindFirstValue(ClaimTypes.NameIdentifier)') {
+                //make inputs disable and hide buttons
+                $('#btnEditGroup').hide();
+                $('#btnDeleteGroup').hide();
+                $('#Name').prop('disabled', true);
+                $('#users').prop('disabled', true);/*  myInput */
+                $('#myInput').prop('disabled', true);
+            }
+            //if auth user is the owner of choosen group
+            else {
+                //show all buttons for edit and enable the inputs
+                $('#btnEditGroup').show();
+                $('#btnDeleteGroup').show();
+                $('#ManageGroupModal :input').prop('disabled', false);
+                $('#btnCloseAdd').prop('disabled', false);
+            };
+
+            //fill the inputs by parameters of choosen group
+            $('#Name').val(selectedGroup.name);
+            $('#GroupId').val(selectedGroup.id);
+            $('#UserGroupId').val(selectedGroup.userId);
+
+            //if group with added users
+            if (selectedGroup.users != null) {
+                selectedGroup.users.forEach(function (element) {
+                    //add added users in array
+                    arrUsersToAdd.push(element);
+                    if (element.id != '@User.FindFirstValue(ClaimTypes.NameIdentifier)') {
+                        //show all users except of auth user
+                        $('#users').append("<option value=" + element.id + " class=selUser>" + element.userName + "</option>");
                     }
                 });
             }
         }
 
-        function DeleteFriend(event, obj) {
-            event.preventDefault();
+        function GetGroup(selectedGroupId) {
+            return $.ajax({
+                dataType: 'json',
+                type: "GET",
+                url: "/Group/GetGroup",
+                async: false,
+                data: { groupId: selectedGroupId },
+                success: function (data) {
+                }
+            });
+        }
 
-            var friendId = obj
+        function DeleteGroup(event, obj) {
+            // event.preventDefault();
+
+            var groupId = obj
                 .closest('.d-flex')
                 .children('.d-flex')
                 .children('.ms-4')
                 .children().val();
 
-            var friendName = obj
+            var groupName = obj
                 .closest('.d-flex')
                 .children('.d-flex')
                 .children('.ms-4')
                 .find('.small').text();
 
-            var friend = obj
+            var group = obj
                 .closest('.d-flex');
 
-            const result = confirm('Are you sure to delete friend "' + friendName + '" ?');
+            const result = confirm('Are you sure to delete group "' + groupName + '" ?');
 
             if (result) {
                 $.ajax({
-                    url: "/Friends/DeleteFriend",
-                    data: JSON.stringify(friendId),
+                    url: "/Group/DeleteGroup",
+                    data: JSON.stringify(groupId),
                     type: "POST",
                     contentType: "application/json;charset=utf-8",
                     dataType: "json",
                     success: function (result) {
-                        let objDel = arrFriends.findIndex(x => x.id === friendId);
-                        arrFriends.splice(objDel, 1);
-                        friend.remove();
+                        group.remove();
                     },
                     error: function (errormessage) {
                         alert(errormessage.responseText);
@@ -333,41 +358,5 @@
                 });
             }
         }
-        // $('.friendDelete').click(function (event) {
-        //     event.preventDefault();
-
-        //     var friendId = $(this)
-        //         .closest('.d-flex')
-        //         .children('.d-flex')
-        //         .children('.ms-4')
-        //         .children().val();
-
-        //     var friendName = $(this)
-        //         .closest('.d-flex')
-        //         .children('.d-flex')
-        //         .children('.ms-4')
-        //         .find('.small').text();
-
-        //     var friend = $(this)
-        //         .closest('.d-flex');
-
-        //     const result = confirm('Are you sure to delete group "' + friendName + '" ?');
-
-        //     if (result) {
-        //         $.ajax({
-        //             url: "/Friends/DeleteFriend",
-        //             data: JSON.stringify(friendId),
-        //             type: "POST",
-        //             contentType: "application/json;charset=utf-8",
-        //             dataType: "json",
-        //             success: function (result) {
-        //                 friend.remove();
-        //             },
-        //             error: function (errormessage) {
-        //                 alert(errormessage.responseText);
-        //             }
-        //         });
-        //     }
-        // });
     </script>
 </body>

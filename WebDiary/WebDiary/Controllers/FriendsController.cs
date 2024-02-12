@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using WebDiary.BLL.Models;
+using WebDiary.BLL.Services;
 using WebDiary.BLL.Services.Interfaces;
 using WebDiary.Models;
 
@@ -27,7 +28,7 @@ namespace WebDiary.Controllers
 
             var result = await _friendsService.GetFriendsAsync(authUserId);
 
-            if (result.Succeeded == false)
+            if (!result.Succeeded)
             {
                 return Json(result.Message);
             }
@@ -36,43 +37,65 @@ namespace WebDiary.Controllers
             return View(obj);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetFriends(string search)
+        {
+            var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var result = await _friendsService.GetFriendsBySearchAsync(search, authUserId);
+
+            if (!result.Succeeded)
+            {
+                return Json(result.Message);
+            }
+
+            var objsViewModels = new List<UserDTO>();
+
+            foreach (var user in result.Data)
+            {
+                objsViewModels.Add(_mapper.Map<UserDTO>(user.Friend));
+            }
+            
+            return Ok(objsViewModels);
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddFriend([FromBody] FriendsViewModel friendModel)
         {
             var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var objDTO = _mapper.Map<FriendsDTO>(friendModel);
-            var result = await _friendsService.AddFriendsAsync(objDTO, authUserId);
+            var result = await _friendsService.AddFriendAsync(objDTO, authUserId);
 
-            if (result.Succeeded == false)
+            if (!result.Succeeded)
             {
                 return BadRequest(result.Message);
             }
 
             var result2 = await _friendsService.GetFriendAsync(friendModel.FriendId, authUserId);
 
-            if (result2.Succeeded == false)
+            if (!result2.Succeeded)
             {
                 return BadRequest(result2.Message);
             }
 
             var objViewModel = _mapper.Map<FriendsViewModel>(result2.Data);
-            return Json(objViewModel);
+            return PartialView("ReturnedFriendPartial", objViewModel);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> DeleteFriend(string id)
+        [HttpPost]
+        public async Task<IActionResult> DeleteFriend([FromBody] string id)
         {
             var authUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var result = await _friendsService.DeleteFriendsAsync(id, authUserId);
+            var result = await _friendsService.DeleteFriendAsync(id, authUserId);
 
-            if (result.Succeeded == false)
+            if (!result.Succeeded)
             {
                 return BadRequest(result.Message);
             }
 
-            return RedirectToAction("Index");
+            return Json(result.Message);
         }
     }
 }

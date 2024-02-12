@@ -1,0 +1,18 @@
+﻿@using System.Security.Claims;
+@model FriendsViewModel
+
+<div class="d-flex align-items-center justify-content-between px-4 friends">
+    <div class="d-flex align-items-center">
+        <i class="fab fa-cc-mastercard fa-2x cc-color-mastercard"></i>
+        <div class="ms-4">
+            <input type="hidden" class="form-control" class="friendId" value="@Model.FriendId">
+            <div class="small friend">@Model.FriendUserName</div>
+            <div class="text-xs text-muted">Friends from 05/2022</div>
+        </div>
+    </div>
+    <div class="ms-4 small">
+        <a class="friendDelete text-muted me-3" href="#!" onclick="DeleteFriend(event,$(this))">Delete</a>
+        <a href="#!">Send notice</a>
+    </div>
+</div>
+<hr>
